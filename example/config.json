@@ -1,0 +1,9 @@
+{
+  "required_files": [
+    "exo1.c"
+  ],
+  "reference_folder": "~/coucou_ref",
+  "compilation_commands": [
+    "gcc exo1.c -o exo1 -Wall"
+  ]
+}

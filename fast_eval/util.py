@@ -8,7 +8,7 @@ import pprint
 # Pour décomprésser
 import shutil
 # Pour les options du script
-import argparse
+#import argparse
 # Pour Exécution de programmes
 import subprocess
 
@@ -258,13 +258,3 @@ class FastEval:
         return self.wcolor + str(msg) + self.rcolor
     def info_str(self, msg):
         return self.icolor + str(msg) + self.rcolor
-
-def main():
-  parser = argparse.ArgumentParser()
-  parser.add_argument("config",
-                      help="path of json config file")
-  parser.add_argument("archive_path",
-                      help="path of archive from arche")
-  parser.add_argument("--ws",
-                      help="where to build workspace")
-  fe = FastEval(parser.parse_args())

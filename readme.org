@@ -59,6 +59,8 @@ nécessaire lors de l'évaluation de TPs/projets.
 * Implémentation
 
 ** Package declaration
+
+*** Fichier de setup
 #+begin_src python :tangle setup.py
 # -*- coding: utf-
 from setuptools import setup, find_packages
@@ -66,15 +68,14 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.1.0',
+    version='0.1.6',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
     url='https://github.com/Virgile-Dauge/fast-eval',
     # download_url='',
     keywords=['assessment', 'evaluation'],
-    install_requires=[],
-    data_files=[('fast_eval', ['fast_eval/config.json'])],
+    install_requires=['colored'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -108,19 +109,32 @@ tree .
 :
 : 1 directory, 5 files
 
+#+begin_src python :tangle fast_eval/__init__.py
+#+end_src
 ** Cli
 
 #+begin_src python :tangle fast_eval/__main__.py
-#!/usr/bin/env python3
-from fast_eval import main
-main()
+  #!/usr/bin/env python3
+  import argparse
+  from fast_eval.util import FastEval
+  def main():
+      print('coucou')
+      parser = argparse.ArgumentParser()
+      parser.add_argument("config",
+                          help="path of json config file")
+      parser.add_argument("archive_path",
+                          help="path of archive from arche")
+      parser.add_argument("--ws",
+                          help="where to build workspace")
+      fe = FastEval(parser.parse_args())
+
 #+end_src
 
 #+RESULTS:
 
 ** DONE Imports
 
-#+begin_src python :tangle fast_eval/fast_eval.py :noweb yes
+#+begin_src python :tangle fast_eval/util.py :noweb yes
   # Pour lecture de dossiers/fichiers
   import os
   import sys
@@ -131,7 +145,7 @@ main()
   # Pour décomprésser
   import shutil
   # Pour les options du script
-  import argparse
+  #import argparse
   # Pour Exécution de programmes
   import subprocess
 
@@ -147,7 +161,7 @@ main()
 ** TODO Class
 *** Init
    Initialization :
-#+begin_src python :tangle fast_eval/fast_eval.py :noweb yes
+#+begin_src python :tangle fast_eval/util.py :noweb yes
   class FastEval:
       """
       @brief Simple tool to provide automation to assessment processes.
@@ -486,16 +500,47 @@ main()
       os.chdir(root_dir)
 #+end_src
 
-** DONE Main
+* Deploiement vers Pypi
 
-#+begin_src python :tangle fast_eval/fast_eval.py
-  def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("config",
-                        help="path of json config file")
-    parser.add_argument("archive_path",
-                        help="path of archive from arche")
-    parser.add_argument("--ws",
-                        help="where to build workspace")
-    fe = FastEval(parser.parse_args())
-#+end_src
+#+BEGIN_SRC bash :results output
+rm -rf dist/
+python setup.py sdist
+#+END_SRC
+
+#+RESULTS[8b5455aa48284574821df6568e30b543c07617d9]:
+#+begin_example
+running sdist
+running egg_info
+writing fast_eval.egg-info/PKG-INFO
+writing dependency_links to fast_eval.egg-info/dependency_links.txt
+writing entry points to fast_eval.egg-info/entry_points.txt
+writing requirements to fast_eval.egg-info/requires.txt
+writing top-level names to fast_eval.egg-info/top_level.txt
+reading manifest file 'fast_eval.egg-info/SOURCES.txt'
+writing manifest file 'fast_eval.egg-info/SOURCES.txt'
+running check
+creating fast-eval-0.1.4
+creating fast-eval-0.1.4/fast_eval
+creating fast-eval-0.1.4/fast_eval.egg-info
+copying files to fast-eval-0.1.4...
+copying setup.py -> fast-eval-0.1.4
+copying fast_eval/__init__.py -> fast-eval-0.1.4/fast_eval
+copying fast_eval/__main__.py -> fast-eval-0.1.4/fast_eval
+copying fast_eval/fast_eval.py -> fast-eval-0.1.4/fast_eval
+copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.1.4/fast_eval.egg-info
+copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.1.4/fast_eval.egg-info
+copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.1.4/fast_eval.egg-info
+copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.1.4/fast_eval.egg-info
+copying fast_eval.egg-info/requires.txt -> fast-eval-0.1.4/fast_eval.egg-info
+copying fast_eval.egg-info/top_level.txt -> fast-eval-0.1.4/fast_eval.egg-info
+Writing fast-eval-0.1.4/setup.cfg
+creating dist
+Creating tar archive
+removing 'fast-eval-0.1.4' (and everything under it)
+#+end_example
+
+#+BEGIN_SRC bash
+  twine upload dist/*
+#+END_SRC
+
+#+RESULTS:
