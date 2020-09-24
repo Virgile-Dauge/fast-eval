@@ -15,7 +15,6 @@ import subprocess
 from colored import fg, bg, attr
 # Helpers
 
-
 def extract_rm(archive_path, dest='.'):
     shutil.unpack_archive(archive_path, dest)
 def search_files(directory='.', extension=''):
@@ -28,14 +27,6 @@ def search_files(directory='.', extension=''):
             elif not extension:
                 found.append(os.path.join(dirpath, name))
     return found
-def write_json(data, file_path):
-    try:
-        with open(file_path, 'w') as fp:
-            json.dump(data, fp, sort_keys=True, indent=4)
-    except:
-        print('Error while writing : \n => {}\n'.format(file_path),
-              file=sys.stderr)
-
 def load_json(file_path):
     try:
         with open(file_path, 'r') as fp:
@@ -49,15 +40,6 @@ def choice_str(choices, target=''):
       res = res + '├── ' + str(choice) + '\n'
     res = res + '└── ' + choices[-1]
     return res
-def write_csv(data, file_path):
-    try:
-        with open('coucou.csv', 'w') as f:
-            csvwriter = csv.writer(f)
-            for d in data:
-                csvwriter.writerow(d)
-    except:
-        print('Error while writing : \n => {}\n'.format(file_path),
-              file=sys.stderr)
 
 class FastEval:
     """
@@ -121,7 +103,6 @@ class FastEval:
             self.extract_dirs()
             self.copy_ref()
             self.copy_etu()
-            self.write_data()
         #if not self.check_prep():
         #    print('Exiting ...\n', file=sys.stderr)
         #    sys.exit()
@@ -129,7 +110,6 @@ class FastEval:
         #self.compile()
         #self.execute(self.cmd)
         self.write_data()
-        self.save_csv()
 
     def load_data(self):
         data_file = os.path.join(self.workspace_path, 'data.json')
@@ -148,7 +128,6 @@ class FastEval:
     
     def write_data(self):
         data_file = os.path.join(self.workspace_path, 'data.json')
-    
         try:
             with open(data_file, 'w') as fp:
                 json.dump({'pass_count': self.pass_count,
@@ -273,20 +252,6 @@ class FastEval:
         to_exec = {sub: self.submissions[sub] for sub in self.submissions if( not self.submissions[sub]['exec_ok'] and self.submissions[sub]['comp_ok'])}
         print('          {} fails.'.format(len(to_exec)))
         os.chdir(root_dir)
-    
-    def save_csv(self, file_path='notes.csv'):
-        try:
-            with open(file_path, 'w') as f:
-                csvwriter = csv.writer(f)
-                for d in self.submissions:
-                    if 'mark_with_bonuses' in self.submissions[d]:
-                        csvwriter.writerow([d, self.submissions[d]['mark_with_bonuses']])
-                    else:
-                        csvwriter.writerow([d])
-        except:
-            print('Error while writing : \n => {}\n'.format(file_path),
-                  file=sys.stderr)
-    
     def erro_str(self, msg):
         return self.ecolor + str(msg) + self.rcolor
     def warn_str(self, msg):
@@ -302,9 +267,4 @@ def main():
                       help="path of archive from arche")
   parser.add_argument("--ws",
                       help="where to build workspace")
-  #parser.add_argument("--ref_path",
-  #                    help="where to pick reference files")
-  #parser.add_argument("--cmd",
-  #                    help="which cmd to execute to test")
-
   fe = FastEval(parser.parse_args())

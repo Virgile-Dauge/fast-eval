@@ -138,13 +138,10 @@ main()
   from colored import fg, bg, attr
   # Helpers
   <<list_files>>
-  <<extract>>
   <<extract_rm>>
   <<search_files>>
-  <<write_json>>
   <<load_json>>
   <<choice_str>>
-  <<write_csv>>
 #+end_src
 
 ** TODO Class
@@ -213,7 +210,6 @@ main()
               self.extract_dirs()
               self.copy_ref()
               self.copy_etu()
-              self.write_data()
           #if not self.check_prep():
           #    print('Exiting ...\n', file=sys.stderr)
           #    sys.exit()
@@ -221,7 +217,6 @@ main()
           #self.compile()
           #self.execute(self.cmd)
           self.write_data()
-          self.save_csv()
 
       <<load_data>>
       <<write_data>>
@@ -232,8 +227,6 @@ main()
       <<check_prep>>
       <<compile>>
       <<execute>>
-      <<gen_stats>>
-      <<save_csv>>
       <<erro_str>>
       <<warn_str>>
       <<info_str>>
@@ -322,22 +315,10 @@ main()
 
 #+end_src
 
-#+name: write_json
-#+begin_src python
-  def write_json(data, file_path):
-      try:
-          with open(file_path, 'w') as fp:
-              json.dump(data, fp, sort_keys=True, indent=4)
-      except:
-          print('Error while writing : \n => {}\n'.format(file_path),
-                file=sys.stderr)
-
-#+end_src
 #+name: write_data
 #+begin_src python
     def write_data(self):
         data_file = os.path.join(self.workspace_path, 'data.json')
-
         try:
             with open(data_file, 'w') as fp:
                 json.dump({'pass_count': self.pass_count,
@@ -505,37 +486,6 @@ main()
       os.chdir(root_dir)
 #+end_src
 
-*** Write csv
-#+name: write_csv
-#+begin_src python
-  def write_csv(data, file_path):
-      try:
-          with open('coucou.csv', 'w') as f:
-              csvwriter = csv.writer(f)
-              for d in data:
-                  csvwriter.writerow(d)
-      except:
-          print('Error while writing : \n => {}\n'.format(file_path),
-                file=sys.stderr)
-
-#+end_src
-
-#+name: save_csv
-#+begin_src python
-  def save_csv(self, file_path='notes.csv'):
-      try:
-          with open(file_path, 'w') as f:
-              csvwriter = csv.writer(f)
-              for d in self.submissions:
-                  if 'mark_with_bonuses' in self.submissions[d]:
-                      csvwriter.writerow([d, self.submissions[d]['mark_with_bonuses']])
-                  else:
-                      csvwriter.writerow([d])
-      except:
-          print('Error while writing : \n => {}\n'.format(file_path),
-                file=sys.stderr)
-
-#+end_src
 ** DONE Main
 
 #+begin_src python :tangle fast_eval/fast_eval.py
@@ -547,10 +497,5 @@ main()
                         help="path of archive from arche")
     parser.add_argument("--ws",
                         help="where to build workspace")
-    #parser.add_argument("--ref_path",
-    #                    help="where to pick reference files")
-    #parser.add_argument("--cmd",
-    #                    help="which cmd to execute to test")
-
     fe = FastEval(parser.parse_args())
 #+end_src
