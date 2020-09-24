@@ -7,8 +7,6 @@ import json
 import pprint
 # Pour décomprésser
 import shutil
-# Pour les options du script
-#import argparse
 # Pour Exécution de programmes
 import subprocess
 
@@ -157,7 +155,7 @@ class FastEval:
             try:
                 extract_rm(files[0], raw_dir)
             except shutil.ReadError:
-                print("Impossible to unpack:" + self.warn_str(files[0]) + '\n')
+                print("Warn: " + self.warn_str(files[0]) + ' Impossible to unpack\n')
     
     def copy_ref(self):
         if self.ref_path is not None:
