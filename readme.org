@@ -1,4 +1,27 @@
 * TODO Mode d'emploi
+** Fichier de configuration
+Champs à adapter :
+
+- required_files :: Fichiers à chercher dans le rendu des étudiants.
+
+- reference_folder :: Dossier dont le contenu est à copier dans le
+  dossier d'évaluation de chaque rendu. Cela peut être des /headers/
+  nécessaires à la compilation, des programmes de tests etc... Chaîne
+  vide si pas besoin de dossier de référence.
+
+- comp_commands :: Liste de commandes à effectuer lors de l'étape de
+  compilation. Liste vide si rien à faire.
+#+BEGIN_SRC json :tangle example/config.json
+  {
+    "compilation_commands": [
+      "gcc exo1.c -o exo1 -Wall"
+    ],
+    "reference_folder": "~/coucou_ref",
+    "required_files": [
+      "exo1.c"
+    ]
+  }
+#+END_SRC
 
 * DONE Concept
 
@@ -95,11 +118,6 @@ main()
 
 #+RESULTS:
 
-** utilities
-
-#+begin_src python
-
-#+end_src
 ** DONE Imports
 
 #+begin_src python :tangle fast_eval/fast_eval.py :noweb yes
@@ -129,8 +147,8 @@ main()
 #+end_src
 
 ** TODO Class
-
-   Initialisation :
+*** Init
+   Initialization :
 #+begin_src python :tangle fast_eval/fast_eval.py :noweb yes
   class FastEval:
       """
@@ -143,27 +161,35 @@ main()
       def __init__(self, args):
           "docstring"
 
-          if args.workspace_path:
-              self.workspace_path = os.path.expanduser(args.workspace_path)
+          if args.ws:
+              self.workspace_path = os.path.expanduser(args.ws)
           else:
               self.workspace_path = os.path.join(os.getcwd(), 'submissions')
           print('Using {} as workspace'.format(self.workspace_path))
 
-          if args.ref_path:
-              self.ref_path = os.path.expanduser(args.ref_path)
+
+
+          config = os.path.expanduser(args.config)
+          assert os.path.isfile(config), "{} is not a file.".format(config)
+          self.required_files = ['exo1.c']
+
+          with open(config, 'r') as fp:
+              config = json.load(fp)
+          self.required_files = config['required_files']
+
+          if len(config['reference_folder']) > 0:
+              self.ref_path = os.path.expanduser(config['reference_folder'])
+              if not os.path.isdir(self.ref_path):
+                  print('Given path : {}'
+                    ' does not exist, exiting...'.format(self.ref_path),
+                    file=sys.stderr)
+                  sys.exit()
               print('Using {} as ref'.format(self.ref_path))
           else:
               self.ref_path = None
               print('Not using ref folder')
 
-
-          #TODO
-          self.required_files = ['exo1.c']
-
-          if args.cmd:
-              self.cmd = args.cmd
-          else:
-              self.cmd = ["./promo-test"]
+          self.cmd = config['compilation_commands']
 
           self.archive_path = os.path.expanduser(args.archive_path)
           if not os.path.exists(self.archive_path):
@@ -208,6 +234,9 @@ main()
       <<save_csv>>
 
 #+end_src
+
+#+RESULTS:
+: None
 
 *** Print Helpers
 #+name: choice_str
@@ -487,15 +516,16 @@ main()
 #+begin_src python :tangle fast_eval/fast_eval.py
   def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("config",
+                        help="path of json config file")
     parser.add_argument("archive_path",
                         help="path of archive from arche")
-    parser.add_argument("--workspace_path",
+    parser.add_argument("--ws",
                         help="where to build workspace")
-    parser.add_argument("--ref_path",
-                        help="where to pick reference files")
-    parser.add_argument("--cmd",
-                        help="which cmd to execute to test")
-    parser.add_argument("--cfg",
-                        help="path of json config file")
+    #parser.add_argument("--ref_path",
+    #                    help="where to pick reference files")
+    #parser.add_argument("--cmd",
+    #                    help="which cmd to execute to test")
+
     fe = FastEval(parser.parse_args())
 #+end_src

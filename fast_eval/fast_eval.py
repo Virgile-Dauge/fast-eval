@@ -78,27 +78,35 @@ class FastEval:
     def __init__(self, args):
         "docstring"
 
-        if args.workspace_path:
-            self.workspace_path = os.path.expanduser(args.workspace_path)
+        if args.ws:
+            self.workspace_path = os.path.expanduser(args.ws)
         else:
             self.workspace_path = os.path.join(os.getcwd(), 'submissions')
         print('Using {} as workspace'.format(self.workspace_path))
 
-        if args.ref_path:
-            self.ref_path = os.path.expanduser(args.ref_path)
+
+
+        config = os.path.expanduser(args.config)
+        assert os.path.isfile(config), "{} is not a file.".format(config)
+        self.required_files = ['exo1.c']
+
+        with open(config, 'r') as fp:
+            config = json.load(fp)
+        self.required_files = config['required_files']
+
+        if len(config['reference_folder']) > 0:
+            self.ref_path = os.path.expanduser(config['reference_folder'])
+            if not os.path.isdir(self.ref_path):
+                print('Given path : {}'
+                  ' does not exist, exiting...'.format(self.ref_path),
+                  file=sys.stderr)
+                sys.exit()
             print('Using {} as ref'.format(self.ref_path))
         else:
             self.ref_path = None
             print('Not using ref folder')
 
-
-        #TODO
-        self.required_files = ['exo1.c']
-
-        if args.cmd:
-            self.cmd = args.cmd
-        else:
-            self.cmd = ["./promo-test"]
+        self.cmd = config['compilation_commands']
 
         self.archive_path = os.path.expanduser(args.archive_path)
         if not os.path.exists(self.archive_path):
@@ -275,14 +283,15 @@ class FastEval:
 
 def main():
   parser = argparse.ArgumentParser()
+  parser.add_argument("config",
+                      help="path of json config file")
   parser.add_argument("archive_path",
                       help="path of archive from arche")
-  parser.add_argument("--workspace_path",
+  parser.add_argument("--ws",
                       help="where to build workspace")
-  parser.add_argument("--ref_path",
-                      help="where to pick reference files")
-  parser.add_argument("--cmd",
-                      help="which cmd to execute to test")
-  parser.add_argument("--cfg",
-                      help="path of json config file")
+  #parser.add_argument("--ref_path",
+  #                    help="where to pick reference files")
+  #parser.add_argument("--cmd",
+  #                    help="which cmd to execute to test")
+
   fe = FastEval(parser.parse_args())
