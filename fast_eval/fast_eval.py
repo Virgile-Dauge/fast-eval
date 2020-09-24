@@ -12,20 +12,12 @@ import argparse
 # Pour Exécution de programmes
 import subprocess
 
+from colored import fg, bg, attr
 # Helpers
 
-def extract(archive_path, dest='.'):
-    try:
-        shutil.unpack_archive(archive_path, dest)
-        return True
-    except:
-        print("Unexpected error while unpacking:",archive_path, '\n' , sys.exc_info()[0])
-        return False
 
 def extract_rm(archive_path, dest='.'):
-    if(extract(archive_path, dest)):
-        os.remove(archive_path)
-
+    shutil.unpack_archive(archive_path, dest)
 def search_files(directory='.', extension=''):
     extension = extension.lower()
     found = []
@@ -77,14 +69,23 @@ class FastEval:
     """
     def __init__(self, args):
         "docstring"
+        self.ecolor = bg('indian_red_1a') + fg('white')
+        self.wcolor = bg('orange_1') + fg('white')
+        self.icolor = bg('deep_sky_blue_2') + fg('white')
+        self.rcolor = attr('reset')
 
         if args.ws:
             self.workspace_path = os.path.expanduser(args.ws)
         else:
             self.workspace_path = os.path.join(os.getcwd(), 'submissions')
-        print('Using {} as workspace'.format(self.workspace_path))
+        print('Using {} as workspace'.format(self.info_str(self.workspace_path)))
 
-
+        self.archive_path = os.path.expanduser(args.archive_path)
+        if not os.path.exists(self.archive_path):
+            print('Given {}'
+                  ' does not exist, exiting...'.format(self.erro_str(self.archive_path)),
+                  file=sys.stderr)
+            sys.exit()
 
         config = os.path.expanduser(args.config)
         assert os.path.isfile(config), "{} is not a file.".format(config)
@@ -97,30 +98,22 @@ class FastEval:
         if len(config['reference_folder']) > 0:
             self.ref_path = os.path.expanduser(config['reference_folder'])
             if not os.path.isdir(self.ref_path):
-                print('Given path : {}'
-                  ' does not exist, exiting...'.format(self.ref_path),
+                print('Given {}'
+                  ' does not exist, exiting...'.format(self.erro_str(self.ref_path)),
                   file=sys.stderr)
                 sys.exit()
-            print('Using {} as ref'.format(self.ref_path))
+            print('Using {} as reference folder'.format(self.info_str(self.ref_path)))
         else:
             self.ref_path = None
             print('Not using ref folder')
 
         self.cmd = config['compilation_commands']
 
-        self.archive_path = os.path.expanduser(args.archive_path)
-        if not os.path.exists(self.archive_path):
-            print('Given path : {}'
-                  ' does not exist, exiting...'.format(self.archive_path),
-                  file=sys.stderr)
-            sys.exit()
-
-
         self.submissions = {}
         self.load_data()
         # Si c'est le premier passage, il faut lancer la preparation
         if self.pass_count == 0:
-            extract(self.archive_path, self.workspace_path)
+            shutil.unpack_archive(self.archive_path, self.workspace_path)
             submissions = self.clean_dirs()
             self.submissions = {key: dict(value, **{'prep_ok': True,
                                                     'comp_ok': False,
@@ -155,7 +148,17 @@ class FastEval:
     
     def write_data(self):
         data_file = os.path.join(self.workspace_path, 'data.json')
-        write_json({'pass_count': self.pass_count, 'submissions': self.submissions}, data_file)
+    
+        try:
+            with open(data_file, 'w') as fp:
+                json.dump({'pass_count': self.pass_count,
+                           'submissions': self.submissions},
+                          fp, sort_keys=True, indent=4)
+            print('Wrote ' + self.info_str(data_file))
+        except:
+            print('Error while writing : \n => {}\n'.format(data_file),
+                  file=sys.stderr)
+    
     def clean_dirs(self):
         submissions = {o[:-32]:{"path": os.path.join(self.workspace_path, o)} for o in os.listdir(self.workspace_path)
                        if os.path.isdir(os.path.join(self.workspace_path, o))}
@@ -172,7 +175,10 @@ class FastEval:
             for o in os.listdir(self.submissions[sub]['path']):
                 shutil.move(os.path.join(self.submissions[sub]['path'],o), raw_dir)
             files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
-            extract_rm(files[0], raw_dir)
+            try:
+                extract_rm(files[0], raw_dir)
+            except shutil.ReadError:
+                print("Impossible to unpack:" + self.warn_str(files[0]) + '\n')
     
     def copy_ref(self):
         if self.ref_path is not None:
@@ -280,6 +286,13 @@ class FastEval:
         except:
             print('Error while writing : \n => {}\n'.format(file_path),
                   file=sys.stderr)
+    
+    def erro_str(self, msg):
+        return self.ecolor + str(msg) + self.rcolor
+    def warn_str(self, msg):
+        return self.wcolor + str(msg) + self.rcolor
+    def info_str(self, msg):
+        return self.icolor + str(msg) + self.rcolor
 
 def main():
   parser = argparse.ArgumentParser()
