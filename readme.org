@@ -34,9 +34,75 @@ de faire une grosse partie du travail fastidieux et répétitif
 nécessaire lors de l'évaluation de TPs/projets.
 
 * Implémentation
+
+** Package declaration
+#+begin_src python :tangle setup.py
+# -*- coding: utf-
+from setuptools import setup, find_packages
+
+setup(
+    name='fast-eval',
+    packages=find_packages(exclude=["examples/*"]),
+    version='0.1.0',
+    description='Simple tool to provide automation to assessment processes.',
+    author=u'Virgile Daugé',
+    author_email='virgile.dauge@pm.me',
+    url='https://github.com/Virgile-Dauge/fast-eval',
+    # download_url='',
+    keywords=['assessment', 'evaluation'],
+    install_requires=[],
+    data_files=[('fast_eval', ['fast_eval/config.json'])],
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Operating System :: POSIX',
+        'Programming Language :: Python :: 3.6',
+        ],
+    entry_points={
+        'console_scripts': [
+            'fast-eval=fast_eval.__main__:main',
+        ],
+    },
+    python_requires='>=3.6',
+)
+#+end_src
+
+#+BEGIN_SRC bash :results output :cache yes
+mkdir fast_eval
+tree .
+#+END_SRC
+
+#+RESULTS[5c942e2388023d571e100ded4100f76a38d146f2]:
+: .
+: ├── fast_eval
+: │   ├── fast_eval.py
+: │   └── __main__.py
+: ├── LICENSE
+: ├── readme.org
+: └── setup.py
+:
+: 1 directory, 5 files
+
+** Cli
+
+#+begin_src python :tangle fast_eval/__main__.py
+#!/usr/bin/env python3
+from fast_eval import main
+main()
+#+end_src
+
+#+RESULTS:
+
+** utilities
+
+#+begin_src python
+
+#+end_src
 ** DONE Imports
 
-#+begin_src python :tangle fast_eval.py :noweb yes
+#+begin_src python :tangle fast_eval/fast_eval.py :noweb yes
   # Pour lecture de dossiers/fichiers
   import os
   import sys
@@ -65,7 +131,7 @@ nécessaire lors de l'évaluation de TPs/projets.
 ** TODO Class
 
    Initialisation :
-#+begin_src python :tangle fast_eval.py :noweb yes
+#+begin_src python :tangle fast_eval/fast_eval.py :noweb yes
   class FastEval:
       """
       @brief Simple tool to provide automation to assessment processes.
@@ -74,42 +140,32 @@ nécessaire lors de l'évaluation de TPs/projets.
       project from a single compressed archive.
 
       """
-      def __init__(self):
+      def __init__(self, args):
           "docstring"
-          parser = argparse.ArgumentParser()
-          parser.add_argument("archive_path",
-                              help="path of archive from arche")
-          parser.add_argument("--workspace_path",
-                              help="where to build workspace")
-          parser.add_argument("--ref_path",
-                              help="where to pick reference files")
-          parser.add_argument("--cmd",
-                              help="which cmd to execute to test")
-          parser.add_argument("--cfg",
-                              help="path of json config file")
-          self.args = parser.parse_args()
 
-          if self.args.workspace_path:
-              self.workspace_path = os.path.expanduser(self.args.workspace_path)
+          if args.workspace_path:
+              self.workspace_path = os.path.expanduser(args.workspace_path)
           else:
               self.workspace_path = os.path.join(os.getcwd(), 'submissions')
           print('Using {} as workspace'.format(self.workspace_path))
 
-          if self.args.ref_path:
-              self.ref_path = os.path.expanduser(self.args.ref_path)
+          if args.ref_path:
+              self.ref_path = os.path.expanduser(args.ref_path)
+              print('Using {} as ref'.format(self.ref_path))
           else:
-              self.ref_path = os.path.join(os.getcwd(), 'ref')
-          print('Using {} as ref'.format(self.ref_path))
+              self.ref_path = None
+              print('Not using ref folder')
+
 
           #TODO
           self.required_files = ['exo1.c']
 
-          if self.args.cmd:
-              self.cmd = self.args.cmd
+          if args.cmd:
+              self.cmd = args.cmd
           else:
               self.cmd = ["./promo-test"]
 
-          self.archive_path = os.path.expanduser(self.args.archive_path)
+          self.archive_path = os.path.expanduser(args.archive_path)
           if not os.path.exists(self.archive_path):
               print('Given path : {}'
                     ' does not exist, exiting...'.format(self.archive_path),
@@ -134,9 +190,8 @@ nécessaire lors de l'évaluation de TPs/projets.
               print('Exiting ...\n', file=sys.stderr)
               sys.exit()
 
-          self.compile()
-          self.execute(self.cmd)
-          self.gen_stats()
+          #self.compile()
+          #self.execute(self.cmd)
           self.write_data()
           self.save_csv()
 
@@ -185,6 +240,17 @@ nécessaire lors de l'évaluation de TPs/projets.
 
 #+end_src
 *** Json data files
+#+name: load_json
+#+begin_src python
+  def load_json(file_path):
+      try:
+          with open(file_path, 'r') as fp:
+              return json.load(fp)
+      except FileNotFoundError:
+          print('No data file found at (Normal if first run):\n => {}'.format(file_path))
+      return None
+#+end_src
+
 #+name: load_json
 #+begin_src python
   def load_json(file_path):
@@ -246,12 +312,6 @@ nécessaire lors de l'évaluation de TPs/projets.
       return submissions
 #+end_src
 
-#+name: list_files
-#+begin_src python
-  def list_files(directory):
-      return [os.path.join(directory, o) for o in os.listdir(directory)]
-
-#+end_src
 #+name: extract_dirs
 #+begin_src python
   def extract_dirs(self):
@@ -268,8 +328,9 @@ nécessaire lors de l'évaluation de TPs/projets.
 #+name: copy_ref
 #+begin_src python
   def copy_ref(self):
-      for sub in self.submissions:
-          shutil.copytree(self.ref_path, os.path.join(self.submissions[sub]['path'], 'eval'))
+      if self.ref_path is not None:
+          for sub in self.submissions:
+              shutil.copytree(self.ref_path, os.path.join(self.submissions[sub]['path'], 'eval'))
 
 #+end_src
 
@@ -280,16 +341,21 @@ nécessaire lors de l'évaluation de TPs/projets.
           raw_dir = os.path.join(self.submissions[sub]['path'], 'raw')
           eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
           for f in self.required_files:
+              # List cadidates for searched file
               student_code = search_files(raw_dir, f)
+              # Filter files in a "__MACOS" directory
+              student_code = [s for s in student_code if '__MACOS' not in s]
+              print(student_code)
               if len(student_code) == 1:
-                  shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
+                  #shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
+                  pass
 
+              elif len(student_code) == 0:
+                  pprint.pprint(self.submissions)
               else:
                   self.submissions[sub]['prep_ok'] = False
                   msg = 'You need to manually copy one of those files'
                   msg = msg + choice_str(student_code, f)
-                  #for code in student_code:
-                  #    msg = msg + ' └── {}\n'.format(code)
                   self.submissions[sub]['prep_error'] = msg
 #+end_src
 #+name: search_files
@@ -406,7 +472,18 @@ nécessaire lors de l'évaluation de TPs/projets.
 #+end_src
 ** DONE Main
 
-#+begin_src python :tangle fast_eval.py
-  if __name__ == '__main__':
-      fe = Fast_Eval()
+#+begin_src python :tangle fast_eval/fast_eval.py
+  def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("archive_path",
+                        help="path of archive from arche")
+    parser.add_argument("--workspace_path",
+                        help="where to build workspace")
+    parser.add_argument("--ref_path",
+                        help="where to pick reference files")
+    parser.add_argument("--cmd",
+                        help="which cmd to execute to test")
+    parser.add_argument("--cfg",
+                        help="path of json config file")
+    fe = FastEval(parser.parse_args())
 #+end_src

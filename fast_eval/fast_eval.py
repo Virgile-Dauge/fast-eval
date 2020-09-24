@@ -125,9 +125,8 @@ class FastEval:
             print('Exiting ...\n', file=sys.stderr)
             sys.exit()
 
-        self.compile()
-        self.execute(self.cmd)
-        self.gen_stats()
+        #self.compile()
+        #self.execute(self.cmd)
         self.write_data()
         self.save_csv()
 
@@ -177,16 +176,21 @@ class FastEval:
             raw_dir = os.path.join(self.submissions[sub]['path'], 'raw')
             eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
             for f in self.required_files:
+                # List cadidates for searched file
                 student_code = search_files(raw_dir, f)
+                # Filter files in a "__MACOS" directory
+                student_code = [s for s in student_code if '__MACOS' not in s]
+                print(student_code)
                 if len(student_code) == 1:
-                    shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
+                    #shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
+                    pass
     
+                elif len(student_code) == 0:
+                    pprint.pprint(self.submissions)
                 else:
                     self.submissions[sub]['prep_ok'] = False
                     msg = 'You need to manually copy one of those files'
                     msg = msg + choice_str(student_code, f)
-                    #for code in student_code:
-                    #    msg = msg + ' └── {}\n'.format(code)
                     self.submissions[sub]['prep_error'] = msg
     def check_prep(self):
         to_check = {sub: self.submissions[sub] for sub in self.submissions if self.submissions[sub]['prep_ok'] == False}
