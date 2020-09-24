@@ -340,18 +340,19 @@ main()
       for sub in self.submissions:
           raw_dir = os.path.join(self.submissions[sub]['path'], 'raw')
           eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
+          if not os.path.exists(eval_dir):
+              os.mkdir(eval_dir)
           for f in self.required_files:
               # List cadidates for searched file
               student_code = search_files(raw_dir, f)
               # Filter files in a "__MACOS" directory
               student_code = [s for s in student_code if '__MACOS' not in s]
-              print(student_code)
               if len(student_code) == 1:
-                  #shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
-                  pass
+                  shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
+                  #pass
 
               elif len(student_code) == 0:
-                  pprint.pprint(self.submissions)
+                  pass
               else:
                   self.submissions[sub]['prep_ok'] = False
                   msg = 'You need to manually copy one of those files'
