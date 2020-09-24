@@ -121,9 +121,9 @@ class FastEval:
             self.copy_ref()
             self.copy_etu()
             self.write_data()
-        if not self.check_prep():
-            print('Exiting ...\n', file=sys.stderr)
-            sys.exit()
+        #if not self.check_prep():
+        #    print('Exiting ...\n', file=sys.stderr)
+        #    sys.exit()
 
         #self.compile()
         #self.execute(self.cmd)
@@ -175,25 +175,35 @@ class FastEval:
         for sub in self.submissions:
             raw_dir = os.path.join(self.submissions[sub]['path'], 'raw')
             eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
+    
             if not os.path.exists(eval_dir):
                 os.mkdir(eval_dir)
+    
+            missing_files = []
+    
+            # Search every required files one by one
             for f in self.required_files:
                 # List cadidates for searched file
                 student_code = search_files(raw_dir, f)
                 # Filter files in a "__MACOS" directory
                 student_code = [s for s in student_code if '__MACOS' not in s]
-                print(student_code)
                 if len(student_code) == 1:
                     shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
-                    #pass
-    
                 elif len(student_code) == 0:
-                    pass
+                    missing_files.append(f)
+                    self.submissions[sub]['prep_ok'] = False
                 else:
                     self.submissions[sub]['prep_ok'] = False
                     msg = 'You need to manually copy one of those files'
                     msg = msg + choice_str(student_code, f)
                     self.submissions[sub]['prep_error'] = msg
+    
+            # Update missing files if needed
+            if missing_files:
+                if 'missing_files' not in self.submissions[sub]:
+                    self.submissions[sub]['missing_files'] = missing_files
+                else:
+                    self.submissions[sub]['missing_files'].extend(missing_files)
     def check_prep(self):
         to_check = {sub: self.submissions[sub] for sub in self.submissions if self.submissions[sub]['prep_ok'] == False}
     
