@@ -95,9 +95,10 @@ class FastEval:
         if self.pass_count == 0:
             shutil.unpack_archive(self.archive_path, self.workspace_path)
             submissions = self.clean_dirs()
-            self.submissions = {key: dict(value, **{'prep_ok': True,
-                                                    'comp_ok': False,
-                                                    'exec_ok': False}) for key, value in submissions.items()}
+            self.submissions = {key: dict(value, **{'steps': {'0_prep' : {},
+                                                              '1_comp' : {},
+                                                              '2_exec' : {},
+                                                              '3_eval' : {}}}) for key, value in submissions.items()}
             self.extract_dirs()
             self.copy_ref()
             self.copy_etu()
@@ -155,7 +156,7 @@ class FastEval:
             try:
                 extract_rm(files[0], raw_dir)
             except shutil.ReadError:
-                print("Warn: " + self.warn_str(files[0]) + ' Impossible to unpack\n')
+                print(self.warn_str('Warn ') + ' ' + str(files[0]) + ' Impossible to unpack\n')
     
     def copy_ref(self):
         if self.ref_path is not None:
@@ -182,19 +183,21 @@ class FastEval:
                     shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
                 elif len(student_code) == 0:
                     missing_files.append(f)
-                    self.submissions[sub]['prep_ok'] = False
+                    self.submissions[sub]['steps']['0_prep']['status'] = False
                 else:
-                    self.submissions[sub]['prep_ok'] = False
+                    self.submissions[sub]['steps']['0_prep']['status'] = False
                     msg = 'You need to manually copy one of those files'
                     msg = msg + choice_str(student_code, f)
-                    self.submissions[sub]['prep_error'] = msg
+                    self.submissions[sub]['steps']['0_prep']['msg'] = msg
     
             # Update missing files if needed
             if missing_files:
-                if 'missing_files' not in self.submissions[sub]:
-                    self.submissions[sub]['missing_files'] = missing_files
+                if 'missing_files' not in self.submissions[sub]['steps']['0_prep']:
+                    self.submissions[sub]['steps']['0_prep']['missing_files'] = missing_files
                 else:
-                    self.submissions[sub]['missing_files'].extend(missing_files)
+                    self.submissions[sub]['steps']['0_prep']['missing_files'].extend(missing_files)
+            else:
+                self.submissions[sub]['steps']['0_prep']['status'] = True
     def check_prep(self):
         to_check = {sub: self.submissions[sub] for sub in self.submissions if self.submissions[sub]['prep_ok'] == False}
     
