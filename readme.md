@@ -1,31 +1,31 @@
-- [Mode d'emploi](#orgb450709)
-  - [Installation](#org257e70a)
-  - [Fichier de configuration](#org511b151)
-  - [Usage](#org08a5611)
-- [Concept](#orgf789d62)
-  - [Pourquoi ?](#org223b88a)
-  - [Comment ?](#orgd31efd2)
-- [Implémentation](#orgfe65d05)
-  - [Package declaration](#org77d2b8e)
-    - [Fichier de setup](#org969630b)
-  - [Cli](#org58bc105)
-  - [Dépendances](#org38930fa)
-  - [Class](#orgbb94ccc)
-    - [Init](#orge4c041d)
-    - [Print Helpers](#orgc4fe988)
-    - [Json data files](#orga75758f)
-    - [Préparation](#orgb824294)
-    - [Compilation](#org33ba628)
-- [Déploiement vers Pypi](#org5b23ca4)
-- [Github Pages](#org99544f3)
+- [Mode d'emploi](#org1ef9898)
+  - [Installation](#org8ff81ef)
+  - [Fichier de configuration](#orgd834a50)
+  - [Usage](#org99a2865)
+- [Concept](#org485a41a)
+  - [Pourquoi ?](#org0799a1d)
+  - [Comment ?](#org6a2f34d)
+- [Implémentation](#org0ef507c)
+  - [Package declaration](#org3a453af)
+    - [Fichier de setup](#org69479ea)
+  - [Cli](#org6e1b97e)
+  - [Dépendances](#orga89b499)
+  - [Class](#org327cfd8)
+    - [Init](#org7c6bb29)
+    - [Print Helpers](#orge4990a2)
+    - [Json data files](#org7b04fea)
+    - [Préparation](#org69e75bd)
+    - [Compilation](#orgfcccf6b)
+- [Déploiement vers Pypi](#org4e8251b)
+- [Github Pages](#org0600b5e)
 
 
-<a id="orgb450709"></a>
+<a id="org1ef9898"></a>
 
 # TODO Mode d'emploi
 
 
-<a id="org257e70a"></a>
+<a id="org8ff81ef"></a>
 
 ## Installation
 
@@ -34,7 +34,7 @@ pip install fast-eval
 ```
 
 
-<a id="org511b151"></a>
+<a id="orgd834a50"></a>
 
 ## Fichier de configuration
 
@@ -62,7 +62,7 @@ Champs à adapter :
 ```
 
 
-<a id="org08a5611"></a>
+<a id="org99a2865"></a>
 
 ## Usage
 
@@ -71,12 +71,12 @@ fast-eval -h
 ```
 
 
-<a id="orgf789d62"></a>
+<a id="org485a41a"></a>
 
 # Concept
 
 
-<a id="org223b88a"></a>
+<a id="org0799a1d"></a>
 
 ## Pourquoi ?
 
@@ -91,7 +91,7 @@ L'objectif de ce projet est de faciliter l'évaluation de TPs d'info. Générale
 -   **Exécution et évaluation:** Faire tourner le programme et voir ce que cela donne. Une partie plus ou moins couvrante peut être déléguée à des logiciels de tests, permettant d'avoir rapidement une idée de la pertinence de la solution soumise.
 
 
-<a id="orgd31efd2"></a>
+<a id="org6a2f34d"></a>
 
 ## Comment ?
 
@@ -100,17 +100,17 @@ Automatisation de la préparation, compilation et pourquoi pas d'une partie de l
 Cette automatisation ce concrétise par un programme python permettant de faire une grosse partie du travail fastidieux et répétitif nécessaire lors de l'évaluation de TPs/projets.
 
 
-<a id="orgfe65d05"></a>
+<a id="org0ef507c"></a>
 
 # Implémentation
 
 
-<a id="org77d2b8e"></a>
+<a id="org3a453af"></a>
 
 ## Package declaration
 
 
-<a id="org969630b"></a>
+<a id="org69479ea"></a>
 
 ### Fichier de setup
 
@@ -156,7 +156,7 @@ tree .
 ```
 
 
-<a id="org58bc105"></a>
+<a id="org6e1b97e"></a>
 
 ## Cli
 
@@ -177,7 +177,7 @@ def main():
 ```
 
 
-<a id="org38930fa"></a>
+<a id="orga89b499"></a>
 
 ## Dépendances
 
@@ -216,12 +216,12 @@ def choice_str(choices, target=''):
 ```
 
 
-<a id="orgbb94ccc"></a>
+<a id="org327cfd8"></a>
 
 ## TODO Class
 
 
-<a id="orge4c041d"></a>
+<a id="org7c6bb29"></a>
 
 ### Init
 
@@ -430,7 +430,7 @@ class FastEval:
 ```
 
 
-<a id="orgc4fe988"></a>
+<a id="orge4990a2"></a>
 
 ### Print Helpers
 
@@ -459,7 +459,7 @@ def info_str(self, msg):
 ```
 
 
-<a id="orga75758f"></a>
+<a id="org7b04fea"></a>
 
 ### Json data files
 
@@ -496,7 +496,7 @@ def write_data(self):
 ```
 
 
-<a id="orgb824294"></a>
+<a id="org69e75bd"></a>
 
 ### Préparation
 
@@ -591,7 +591,7 @@ def search_files(directory='.', extension=''):
 ```
 
 
-<a id="org33ba628"></a>
+<a id="orgfcccf6b"></a>
 
 ### Compilation
 
@@ -628,7 +628,7 @@ def exte_step(self, cmd, step='1_comp', label='Compiling'):
 ```
 
 
-<a id="org5b23ca4"></a>
+<a id="org4e8251b"></a>
 
 # Déploiement vers Pypi
 
@@ -642,7 +642,7 @@ twine upload dist/*
 ```
 
 
-<a id="org99544f3"></a>
+<a id="org0600b5e"></a>
 
 # Github Pages
 
