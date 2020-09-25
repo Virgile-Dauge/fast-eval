@@ -34,7 +34,7 @@ Champs à adapter :
 
 ** Usage
 
-#+BEGIN_SRC bash :results output :export both
+#+BEGIN_SRC bash :results output :exports both
   fast-eval -h
 #+END_SRC
 

@@ -1,31 +1,31 @@
-- [Mode d'emploi](#org1ef9898)
-  - [Installation](#org8ff81ef)
-  - [Fichier de configuration](#orgd834a50)
-  - [Usage](#org99a2865)
-- [Concept](#org485a41a)
-  - [Pourquoi ?](#org0799a1d)
-  - [Comment ?](#org6a2f34d)
-- [Implémentation](#org0ef507c)
-  - [Package declaration](#org3a453af)
-    - [Fichier de setup](#org69479ea)
-  - [Cli](#org6e1b97e)
-  - [Dépendances](#orga89b499)
-  - [Class](#org327cfd8)
-    - [Init](#org7c6bb29)
-    - [Print Helpers](#orge4990a2)
-    - [Json data files](#org7b04fea)
-    - [Préparation](#org69e75bd)
-    - [Compilation](#orgfcccf6b)
-- [Déploiement vers Pypi](#org4e8251b)
-- [Github Pages](#org0600b5e)
+- [Mode d'emploi](#orgb08e66b)
+  - [Installation](#org2023432)
+  - [Fichier de configuration](#org02e975c)
+  - [Usage](#org5eb83e5)
+- [Concept](#orgc11a466)
+  - [Pourquoi ?](#org3ddfdcb)
+  - [Comment ?](#orga5fb0b5)
+- [Implémentation](#orga7e0d29)
+  - [Package declaration](#orgf7ed530)
+    - [Fichier de setup](#org666e359)
+  - [Cli](#org0154e9e)
+  - [Dépendances](#orgbca24e7)
+  - [Class](#orge3cf804)
+    - [Init](#orge899956)
+    - [Print Helpers](#orgeb8bc59)
+    - [Json data files](#orgd2c47c3)
+    - [Préparation](#orgf9dbbb0)
+    - [Compilation](#orgf057a59)
+- [Déploiement vers Pypi](#org8fa2f4d)
+- [Github Pages](#orga431284)
 
 
-<a id="org1ef9898"></a>
+<a id="orgb08e66b"></a>
 
 # TODO Mode d'emploi
 
 
-<a id="org8ff81ef"></a>
+<a id="org2023432"></a>
 
 ## Installation
 
@@ -34,7 +34,7 @@ pip install fast-eval
 ```
 
 
-<a id="orgd834a50"></a>
+<a id="org02e975c"></a>
 
 ## Fichier de configuration
 
@@ -62,7 +62,7 @@ Champs à adapter :
 ```
 
 
-<a id="org99a2865"></a>
+<a id="org5eb83e5"></a>
 
 ## Usage
 
@@ -70,13 +70,23 @@ Champs à adapter :
 fast-eval -h
 ```
 
+    usage: fast-eval [-h] [--ws WS] config archive_path
 
-<a id="org485a41a"></a>
+    positional arguments:
+      config        path of json config file
+      archive_path  path of archive from arche
+
+    optional arguments:
+      -h, --help    show this help message and exit
+      --ws WS       where to build workspace
+
+
+<a id="orgc11a466"></a>
 
 # Concept
 
 
-<a id="org0799a1d"></a>
+<a id="org3ddfdcb"></a>
 
 ## Pourquoi ?
 
@@ -91,7 +101,7 @@ L'objectif de ce projet est de faciliter l'évaluation de TPs d'info. Générale
 -   **Exécution et évaluation:** Faire tourner le programme et voir ce que cela donne. Une partie plus ou moins couvrante peut être déléguée à des logiciels de tests, permettant d'avoir rapidement une idée de la pertinence de la solution soumise.
 
 
-<a id="org6a2f34d"></a>
+<a id="orga5fb0b5"></a>
 
 ## Comment ?
 
@@ -100,17 +110,17 @@ Automatisation de la préparation, compilation et pourquoi pas d'une partie de l
 Cette automatisation ce concrétise par un programme python permettant de faire une grosse partie du travail fastidieux et répétitif nécessaire lors de l'évaluation de TPs/projets.
 
 
-<a id="org0ef507c"></a>
+<a id="orga7e0d29"></a>
 
 # Implémentation
 
 
-<a id="org3a453af"></a>
+<a id="orgf7ed530"></a>
 
 ## Package declaration
 
 
-<a id="org69479ea"></a>
+<a id="org666e359"></a>
 
 ### Fichier de setup
 
@@ -156,7 +166,7 @@ tree .
 ```
 
 
-<a id="org6e1b97e"></a>
+<a id="org0154e9e"></a>
 
 ## Cli
 
@@ -177,7 +187,7 @@ def main():
 ```
 
 
-<a id="orga89b499"></a>
+<a id="orgbca24e7"></a>
 
 ## Dépendances
 
@@ -216,12 +226,12 @@ def choice_str(choices, target=''):
 ```
 
 
-<a id="org327cfd8"></a>
+<a id="orge3cf804"></a>
 
 ## TODO Class
 
 
-<a id="org7c6bb29"></a>
+<a id="orge899956"></a>
 
 ### Init
 
@@ -430,7 +440,7 @@ class FastEval:
 ```
 
 
-<a id="orge4990a2"></a>
+<a id="orgeb8bc59"></a>
 
 ### Print Helpers
 
@@ -459,7 +469,7 @@ def info_str(self, msg):
 ```
 
 
-<a id="org7b04fea"></a>
+<a id="orgd2c47c3"></a>
 
 ### Json data files
 
@@ -496,7 +506,7 @@ def write_data(self):
 ```
 
 
-<a id="org69e75bd"></a>
+<a id="orgf9dbbb0"></a>
 
 ### Préparation
 
@@ -591,7 +601,7 @@ def search_files(directory='.', extension=''):
 ```
 
 
-<a id="orgfcccf6b"></a>
+<a id="orgf057a59"></a>
 
 ### Compilation
 
@@ -628,7 +638,7 @@ def exte_step(self, cmd, step='1_comp', label='Compiling'):
 ```
 
 
-<a id="org4e8251b"></a>
+<a id="org8fa2f4d"></a>
 
 # Déploiement vers Pypi
 
@@ -642,7 +652,7 @@ twine upload dist/*
 ```
 
 
-<a id="org0600b5e"></a>
+<a id="orga431284"></a>
 
 # Github Pages
 
