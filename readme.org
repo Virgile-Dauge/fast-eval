@@ -556,3 +556,18 @@ removing 'fast-eval-0.1.4' (and everything under it)
 #+END_SRC
 
 #+RESULTS:
+* Github Pages
+
+#+BEGIN_SRC bash
+mkdir docs
+#+END_SRC
+
+#+BEGIN_SRC yaml :tangle docs/_config.yml
+theme: jekyll-theme-architect
+#+END_SRC
+
+#+BEGIN_SRC bash
+cp readme.md docs/index.md
+#+END_SRC
+
+#+RESULTS:
