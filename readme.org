@@ -1,4 +1,10 @@
 * TODO Mode d'emploi
+** Installation
+
+#+BEGIN_SRC bash
+ pip install fast-eval
+#+END_SRC
+
 ** Fichier de configuration
 Champs à adapter :
 
@@ -22,6 +28,13 @@ Champs à adapter :
     ]
   }
 #+END_SRC
+
+** Usage
+
+#+BEGIN_SRC bash
+  fast-eval -h
+#+END_SRC
+
 
 * Concept
 
