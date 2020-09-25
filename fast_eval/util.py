@@ -90,13 +90,14 @@ class FastEval:
         if self.pass_count == 0:
             shutil.unpack_archive(self.archive_path, self.workspace_path)
             submissions = self.clean_dirs()
-            print('Processing {} projects...\n'.format(len(self.submissions)))
+            print('Processing {} projects...\n'.format(len(submissions)))
             self.submissions = {key: dict(value, **{'step' : '0_prep', 'steps': {'0_prep' : {},
                                                                                  '1_comp' : {},
                                                                                  '2_exec' : {},
                                                                                  '3_eval' : {}}}) for key, value in submissions.items()}
             self.extract_dirs()
             self.copy_ref()
+            print('\n')
         else:
             print('Processing {} projects...\n'.format(len(self.submissions)))
         self.prep_step()
