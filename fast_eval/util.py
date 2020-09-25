@@ -13,7 +13,6 @@ import subprocess
 from colored import fg, bg, attr
 # Helpers
 
-
 def search_files(directory='.', extension=''):
     extension = extension.lower()
     found = []
@@ -24,13 +23,6 @@ def search_files(directory='.', extension=''):
             elif not extension:
                 found.append(os.path.join(dirpath, name))
     return found
-def load_json(file_path):
-    try:
-        with open(file_path, 'r') as fp:
-            return json.load(fp)
-    except FileNotFoundError:
-        print('No data file found at (Normal if first run):\n => {}'.format(file_path))
-    return None
 def choice_str(choices, target=''):
     res = '. ' + str(target) + '\n' + '│\n'
     for choice in choices[:-1]:
@@ -49,10 +41,10 @@ class FastEval:
     def __init__(self, args):
         "docstring"
         self.ecolor = bg('indian_red_1a') + fg('white')
-        self.ecolor = fg('indian_red_1a')
+        #self.ecolor = fg('red_3a')
         #self.wcolor = bg('orange_1') + fg('white')
         self.wcolor = fg('orange_1')
-        self.icolor = bg('deep_sky_blue_2') + fg('white')
+        #self.icolor = bg('deep_sky_blue_2') + fg('white')
         self.icolor = fg('deep_sky_blue_2')
         self.rcolor = attr('reset')
 
@@ -98,37 +90,33 @@ class FastEval:
         if self.pass_count == 0:
             shutil.unpack_archive(self.archive_path, self.workspace_path)
             submissions = self.clean_dirs()
+            print('Processing {} projects...\n'.format(len(self.submissions)))
             self.submissions = {key: dict(value, **{'step' : '0_prep', 'steps': {'0_prep' : {},
                                                                                  '1_comp' : {},
                                                                                  '2_exec' : {},
                                                                                  '3_eval' : {}}}) for key, value in submissions.items()}
             self.extract_dirs()
             self.copy_ref()
-            #self.copy_etu()
-        #if not self.check_prep():
-        #    print('Exiting ...\n', file=sys.stderr)
-        #    sys.exit()
-
-        #self.compile()
-        #self.execute(self.cmd)
+        else:
+            print('Processing {} projects...\n'.format(len(self.submissions)))
         self.prep_step()
         self.comp_step()
         self.write_data()
 
     def load_data(self):
         data_file = os.path.join(self.workspace_path, 'data.json')
-        data = load_json(data_file)
-        if data is None:
-            self.pass_count = 0
-        else:
-            try:
-                self.pass_count = data['pass_count'] + 1
-                self.submissions = data['submissions']
-                print('Loaded ' + self.info_str(data_file) + ' savefile.\n')
-            except KeyError:
-                print('Invalid ' + self.erro_str(data_file) + 'exiting...\n')
-                sys.exit()
+        #data = load_json(data_file)
+        try:
+            with open(data_file, 'r') as fp:
+                data = json.load(fp)
     
+    
+            self.pass_count = data['pass_count'] + 1
+            self.submissions = data['submissions']
+            print('Loaded ' + self.info_str(data_file) + ' savefile.\n')
+        except FileNotFoundError:
+            print('Using  ' + self.info_str(data_file) + ' savefile.\n')
+            self.pass_count = 0
     def write_data(self):
         data_file = os.path.join(self.workspace_path, 'data.json')
         try:
@@ -170,6 +158,7 @@ class FastEval:
     
     def prep_step(self):
         to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
+        print('Preparing  {} projects...'.format(len(to_prep)))
         for sub in to_prep:
             raw_dir = os.path.join(self.submissions[sub]['path'], 'raw')
             eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
@@ -202,30 +191,12 @@ class FastEval:
                     self.submissions[sub]['steps']['0_prep']['missing_files'].extend(missing_files)
             else:
                 self.submissions[sub]['step'] = '1_comp'
-    def check_prep(self):
-        to_check = {sub: self.submissions[sub] for sub in self.submissions if self.submissions[sub]['prep_ok'] == False}
     
-        for sub in to_check:
-            ok = True
-            # Il faut vérifier que tous les fichiers sont bien présents.
-            files = [o for o in os.listdir(os.path.join(to_check[sub]['path'], 'eval'))]
-            for f in self.required_files:
-                if f not in files:
-                    ok = False
-            if ok == True:
-                self.submissions[sub]['prep_ok'] = True
-        to_check = {sub: self.submissions[sub] for sub in self.submissions if self.submissions[sub]['prep_ok'] == False}
-        if len(to_check) == 0:
-            return True
-        else:
-            print('\nPlease fix following issue.s'
-              ' before starting auto_corrector.py again :\n')
-            for c in to_check:
-                print(c,'\n', to_check[c]['prep_error'])
-            return False
+        to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
+        print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
     def comp_step(self):
         to_comp = [sub for sub in self.submissions if self.submissions[sub]['step'] == '1_comp']
-        print('Compiling {} projects...'.format(len(to_comp)))
+        print('Compiling  {} projects...'.format(len(to_comp)))
         root_dir = os.getcwd()
         for sub in to_comp:
             os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
@@ -235,11 +206,13 @@ class FastEval:
                     self.submissions[sub]['step'] = '2_exec'
                     if len(completed_process.stderr) > 0:
                         self.submissions[sub]['steps']['1_comp'][c] = completed_process.stderr
-        to_comp = [sub for sub in self.submissions if self.submissions[sub]['step'] == '1_comp']
-        print('          {} fails.'.format(len(to_comp)))
+    
         os.chdir(root_dir)
+        to_comp = [sub for sub in self.submissions if self.submissions[sub]['step'] == '1_comp']
+        print('           ' + self.erro_str('{} fails.'.format(len(to_comp))) + '\n')
+    
     def execute(self, cmd):
-        to_exec = {sub: self.submissions[sub] for sub in self.submissions if( not self.submissions[sub]['exec_ok'] and self.submissions[sub]['comp_ok'])}
+        to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == '2_exec']
         print('Executing {} projects...'.format(len(to_exec)))
         root_dir = os.getcwd()
         for sub in to_exec:
@@ -255,9 +228,10 @@ class FastEval:
                 mark = float([i for i in mark_line.split(' ') if i][-1])
                 self.submissions[sub]['mark'] = mark
                 #print(mark, mark_line)
-        to_exec = {sub: self.submissions[sub] for sub in self.submissions if( not self.submissions[sub]['exec_ok'] and self.submissions[sub]['comp_ok'])}
-        print('          {} fails.'.format(len(to_exec)))
         os.chdir(root_dir)
+        to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == '2_exec']
+        print('          ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
+    
     def erro_str(self, msg):
         return self.ecolor + str(msg) + self.rcolor
     def warn_str(self, msg):
