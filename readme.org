@@ -25,6 +25,9 @@ Champs à adapter :
     "reference_folder": "~/coucou_ref",
     "compilation_commands": [
       "gcc exo1.c -o exo1 -Wall"
+    ],
+    "execution_commands": [
+      "./exo1"
     ]
   }
 #+END_SRC
@@ -34,7 +37,6 @@ Champs à adapter :
 #+BEGIN_SRC bash
   fast-eval -h
 #+END_SRC
-
 
 * Concept
 
@@ -203,7 +205,6 @@ tree .
 
           config = os.path.expanduser(args.config)
           assert os.path.isfile(config), "{} is not a file.".format(config)
-          self.required_files = ['exo1.c']
 
           with open(config, 'r') as fp:
               config = json.load(fp)
@@ -221,7 +222,8 @@ tree .
               self.ref_path = None
               print('Not using ref folder')
 
-          self.cmd = config['compilation_commands']
+          self.comp_cmd = config['compilation_commands']
+          self.exec_cmd = config['execution_commands']
 
           self.submissions = {}
           # Chargement de la config
@@ -240,7 +242,8 @@ tree .
           else:
               print('Processing {} projects...\n'.format(len(self.submissions)))
           self.prep_step()
-          self.comp_step()
+          self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
+          #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
           self.write_data()
 
       <<load_data>>
@@ -249,8 +252,8 @@ tree .
       <<extract_dirs>>
       <<copy_ref>>
       <<prep_step>>
-      <<comp_step>>
-      <<execute>>
+      <<exte_step>>
+      <<next_step>>
       <<erro_str>>
       <<warn_str>>
       <<info_str>>
@@ -314,7 +317,7 @@ tree .
             with open(data_file, 'w') as fp:
                 json.dump({'pass_count': self.pass_count,
                            'submissions': self.submissions},
-                          fp, sort_keys=True, indent=4)
+                          fp, sort_keys=True, indent=4, ensure_ascii=False)
             print('Wrote  ' + self.info_str(data_file) + ' savefile.')
         except:
             print('Error while writing : \n => {}\n'.format(data_file),
@@ -415,58 +418,47 @@ tree .
                   found.append(os.path.join(dirpath, name))
       return found
 #+end_src
-#+name: check_prep
-#+begin_src python
-  def check_prep(self):
-      to_check = {sub: self.submissions[sub] for sub in self.submissions if self.submissions[sub]['prep_ok'] == False}
 
-      for sub in to_check:
-          ok = True
-          # Il faut vérifier que tous les fichiers sont bien présents.
-          files = [o for o in os.listdir(os.path.join(to_check[sub]['path'], 'eval'))]
-          for f in self.required_files:
-              if f not in files:
-                  ok = False
-          if ok == True:
-              self.submissions[sub]['prep_ok'] = True
-      to_check = {sub: self.submissions[sub] for sub in self.submissions if self.submissions[sub]['prep_ok'] == False}
-      if len(to_check) == 0:
-          return True
-      else:
-          print('\nPlease fix following issue.s'
-            ' before starting auto_corrector.py again :\n')
-          for c in to_check:
-              print(c,'\n', to_check[c]['prep_error'])
-          return False
-#+end_src
 *** Compilation
 
-#+name: comp_step
+#+name: next_step
 #+begin_src python
-  def comp_step(self):
-      to_comp = [sub for sub in self.submissions if self.submissions[sub]['step'] == '1_comp']
-      print('Compiling  {} projects...'.format(len(to_comp)))
+  def next_step(self, step):
+      if step == '0_prep':
+          return '1_comp'
+      elif step == '1_comp':
+          return '2_exec'
+      elif step == '2_exec':
+          return '3_eval'
+      else:
+          return 'done'
+#+end_src
+
+#+name: exte_step
+#+begin_src python
+  def exte_step(self, cmd, step='1_comp', label='Compiling'):
+      to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
+      print('{}  {} projects...'.format(label, len(to_exec)))
       root_dir = os.getcwd()
-      for sub in to_comp:
+      for sub in to_exec:
           os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
-          for c in self.cmd:
+          for c in cmd:
               completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
               if completed_process.returncode == 0:
-                  self.submissions[sub]['step'] = '2_exec'
+                  self.submissions[sub]['step'] = self.next_step(step)
                   if len(completed_process.stderr) > 0:
-                      self.submissions[sub]['steps']['1_comp'][c] = completed_process.stderr
+                      self.submissions[sub]['steps'][step][c] = completed_process.stderr
 
       os.chdir(root_dir)
-      to_comp = [sub for sub in self.submissions if self.submissions[sub]['step'] == '1_comp']
-      print('           ' + self.erro_str('{} fails.'.format(len(to_comp))) + '\n')
+      to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
+      print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
 
 #+end_src
 
-#+name: execute
 #+begin_src python
-  def execute(self, cmd):
+  def exec_step(self):
       to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == '2_exec']
-      print('Executing {} projects...'.format(len(to_exec)))
+      print('Executing  {} projects...'.format(len(to_exec)))
       root_dir = os.getcwd()
       for sub in to_exec:
           os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
@@ -483,7 +475,7 @@ tree .
               #print(mark, mark_line)
       os.chdir(root_dir)
       to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == '2_exec']
-      print('          ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
+      print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
 
 #+end_src
 

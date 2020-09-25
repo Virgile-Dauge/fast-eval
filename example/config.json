@@ -5,5 +5,8 @@
   "reference_folder": "~/coucou_ref",
   "compilation_commands": [
     "gcc exo1.c -o exo1 -Wall"
+  ],
+  "execution_commands": [
+    "./exo1"
   ]
 }

@@ -63,7 +63,6 @@ class FastEval:
 
         config = os.path.expanduser(args.config)
         assert os.path.isfile(config), "{} is not a file.".format(config)
-        self.required_files = ['exo1.c']
 
         with open(config, 'r') as fp:
             config = json.load(fp)
@@ -81,7 +80,8 @@ class FastEval:
             self.ref_path = None
             print('Not using ref folder')
 
-        self.cmd = config['compilation_commands']
+        self.comp_cmd = config['compilation_commands']
+        self.exec_cmd = config['execution_commands']
 
         self.submissions = {}
         # Chargement de la config
@@ -100,7 +100,8 @@ class FastEval:
         else:
             print('Processing {} projects...\n'.format(len(self.submissions)))
         self.prep_step()
-        self.comp_step()
+        self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
+        #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
         self.write_data()
 
     def load_data(self):
@@ -123,7 +124,7 @@ class FastEval:
             with open(data_file, 'w') as fp:
                 json.dump({'pass_count': self.pass_count,
                            'submissions': self.submissions},
-                          fp, sort_keys=True, indent=4)
+                          fp, sort_keys=True, indent=4, ensure_ascii=False)
             print('Wrote  ' + self.info_str(data_file) + ' savefile.')
         except:
             print('Error while writing : \n => {}\n'.format(data_file),
@@ -194,44 +195,32 @@ class FastEval:
     
         to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
         print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
-    def comp_step(self):
-        to_comp = [sub for sub in self.submissions if self.submissions[sub]['step'] == '1_comp']
-        print('Compiling  {} projects...'.format(len(to_comp)))
-        root_dir = os.getcwd()
-        for sub in to_comp:
-            os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
-            for c in self.cmd:
-                completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
-                if completed_process.returncode == 0:
-                    self.submissions[sub]['step'] = '2_exec'
-                    if len(completed_process.stderr) > 0:
-                        self.submissions[sub]['steps']['1_comp'][c] = completed_process.stderr
-    
-        os.chdir(root_dir)
-        to_comp = [sub for sub in self.submissions if self.submissions[sub]['step'] == '1_comp']
-        print('           ' + self.erro_str('{} fails.'.format(len(to_comp))) + '\n')
-    
-    def execute(self, cmd):
-        to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == '2_exec']
-        print('Executing {} projects...'.format(len(to_exec)))
+    def exte_step(self, cmd, step='1_comp', label='Compiling'):
+        to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
+        print('{}  {} projects...'.format(label, len(to_exec)))
         root_dir = os.getcwd()
         for sub in to_exec:
             os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
-            completed_process = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-            if completed_process.returncode != 0:
-                #print(completed_process.returncode, completed_process.stderr)
-                self.submissions[sub]['exec_error'] = completed_process.stderr
-            else:
-                self.submissions[sub]['exec_ok'] = True
-                self.submissions[sub]['exec_pts'] = self.pass_count < 2
-                mark_line = [i for i in completed_process.stdout.split('\n') if i][-3]
-                mark = float([i for i in mark_line.split(' ') if i][-1])
-                self.submissions[sub]['mark'] = mark
-                #print(mark, mark_line)
-        os.chdir(root_dir)
-        to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == '2_exec']
-        print('          ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
+            for c in cmd:
+                completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
+                if completed_process.returncode == 0:
+                    self.submissions[sub]['step'] = self.next_step(step)
+                    if len(completed_process.stderr) > 0:
+                        self.submissions[sub]['steps'][step][c] = completed_process.stderr
     
+        os.chdir(root_dir)
+        to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
+        print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
+    
+    def next_step(self, step):
+        if step == '0_prep':
+            return '1_comp'
+        elif step == '1_comp':
+            return '2_exec'
+        elif step == '2_exec':
+            return '3_eval'
+        else:
+            return 'done'
     def erro_str(self, msg):
         return self.ecolor + str(msg) + self.rcolor
     def warn_str(self, msg):
