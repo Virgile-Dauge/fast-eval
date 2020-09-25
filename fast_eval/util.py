@@ -13,8 +13,7 @@ import subprocess
 from colored import fg, bg, attr
 # Helpers
 
-def extract_rm(archive_path, dest='.'):
-    shutil.unpack_archive(archive_path, dest)
+
 def search_files(directory='.', extension=''):
     extension = extension.lower()
     found = []
@@ -50,19 +49,22 @@ class FastEval:
     def __init__(self, args):
         "docstring"
         self.ecolor = bg('indian_red_1a') + fg('white')
-        self.wcolor = bg('orange_1') + fg('white')
+        self.ecolor = fg('indian_red_1a')
+        #self.wcolor = bg('orange_1') + fg('white')
+        self.wcolor = fg('orange_1')
         self.icolor = bg('deep_sky_blue_2') + fg('white')
+        self.icolor = fg('deep_sky_blue_2')
         self.rcolor = attr('reset')
 
         if args.ws:
             self.workspace_path = os.path.expanduser(args.ws)
         else:
             self.workspace_path = os.path.join(os.getcwd(), 'submissions')
-        print('Using {} as workspace'.format(self.info_str(self.workspace_path)))
+        print('Using  {} as workspace'.format(self.info_str(self.workspace_path)))
 
         self.archive_path = os.path.expanduser(args.archive_path)
         if not os.path.exists(self.archive_path):
-            print('Given {}'
+            print('Given  {}'
                   ' does not exist, exiting...'.format(self.erro_str(self.archive_path)),
                   file=sys.stderr)
             sys.exit()
@@ -78,11 +80,11 @@ class FastEval:
         if len(config['reference_folder']) > 0:
             self.ref_path = os.path.expanduser(config['reference_folder'])
             if not os.path.isdir(self.ref_path):
-                print('Given {}'
+                print('Given  {}'
                   ' does not exist, exiting...'.format(self.erro_str(self.ref_path)),
                   file=sys.stderr)
                 sys.exit()
-            print('Using {} as reference folder'.format(self.info_str(self.ref_path)))
+            print('Using  {} as reference folder'.format(self.info_str(self.ref_path)))
         else:
             self.ref_path = None
             print('Not using ref folder')
@@ -90,24 +92,27 @@ class FastEval:
         self.cmd = config['compilation_commands']
 
         self.submissions = {}
+        # Chargement de la config
         self.load_data()
         # Si c'est le premier passage, il faut lancer la preparation
         if self.pass_count == 0:
             shutil.unpack_archive(self.archive_path, self.workspace_path)
             submissions = self.clean_dirs()
-            self.submissions = {key: dict(value, **{'steps': {'0_prep' : {},
-                                                              '1_comp' : {},
-                                                              '2_exec' : {},
-                                                              '3_eval' : {}}}) for key, value in submissions.items()}
+            self.submissions = {key: dict(value, **{'step' : '0_prep', 'steps': {'0_prep' : {},
+                                                                                 '1_comp' : {},
+                                                                                 '2_exec' : {},
+                                                                                 '3_eval' : {}}}) for key, value in submissions.items()}
             self.extract_dirs()
             self.copy_ref()
-            self.copy_etu()
+            #self.copy_etu()
         #if not self.check_prep():
         #    print('Exiting ...\n', file=sys.stderr)
         #    sys.exit()
 
         #self.compile()
         #self.execute(self.cmd)
+        self.prep_step()
+        self.comp_step()
         self.write_data()
 
     def load_data(self):
@@ -119,10 +124,9 @@ class FastEval:
             try:
                 self.pass_count = data['pass_count'] + 1
                 self.submissions = data['submissions']
-                print('Datafile Successfully loaded:\n'
-                      ' => {}\nCurrent pass : {}\n'.format(data_file, self.pass_count))
+                print('Loaded ' + self.info_str(data_file) + ' savefile.\n')
             except KeyError:
-                print('Invalid data file : \n => {}\n exiting...'.format(data_file))
+                print('Invalid ' + self.erro_str(data_file) + 'exiting...\n')
                 sys.exit()
     
     def write_data(self):
@@ -132,7 +136,7 @@ class FastEval:
                 json.dump({'pass_count': self.pass_count,
                            'submissions': self.submissions},
                           fp, sort_keys=True, indent=4)
-            print('Wrote ' + self.info_str(data_file))
+            print('Wrote  ' + self.info_str(data_file) + ' savefile.')
         except:
             print('Error while writing : \n => {}\n'.format(data_file),
                   file=sys.stderr)
@@ -154,17 +158,19 @@ class FastEval:
                 shutil.move(os.path.join(self.submissions[sub]['path'],o), raw_dir)
             files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
             try:
-                extract_rm(files[0], raw_dir)
+                shutil.unpack_archive(files[0], raw_dir)
+                os.remove(files[0])
             except shutil.ReadError:
-                print(self.warn_str('Warn ') + ' ' + str(files[0]) + ' Impossible to unpack\n')
+                print('Unpack ' + self.warn_str(files[0]) + ' failed.')
     
     def copy_ref(self):
         if self.ref_path is not None:
             for sub in self.submissions:
                 shutil.copytree(self.ref_path, os.path.join(self.submissions[sub]['path'], 'eval'))
     
-    def copy_etu(self):
-        for sub in self.submissions:
+    def prep_step(self):
+        to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
+        for sub in to_prep:
             raw_dir = os.path.join(self.submissions[sub]['path'], 'raw')
             eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
     
@@ -183,9 +189,7 @@ class FastEval:
                     shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
                 elif len(student_code) == 0:
                     missing_files.append(f)
-                    self.submissions[sub]['steps']['0_prep']['status'] = False
                 else:
-                    self.submissions[sub]['steps']['0_prep']['status'] = False
                     msg = 'You need to manually copy one of those files'
                     msg = msg + choice_str(student_code, f)
                     self.submissions[sub]['steps']['0_prep']['msg'] = msg
@@ -197,7 +201,7 @@ class FastEval:
                 else:
                     self.submissions[sub]['steps']['0_prep']['missing_files'].extend(missing_files)
             else:
-                self.submissions[sub]['steps']['0_prep']['status'] = True
+                self.submissions[sub]['step'] = '1_comp'
     def check_prep(self):
         to_check = {sub: self.submissions[sub] for sub in self.submissions if self.submissions[sub]['prep_ok'] == False}
     
@@ -219,18 +223,19 @@ class FastEval:
             for c in to_check:
                 print(c,'\n', to_check[c]['prep_error'])
             return False
-    def compile(self):
-        to_comp = {sub: self.submissions[sub] for sub in self.submissions if self.submissions[sub]['comp_ok'] == False}
+    def comp_step(self):
+        to_comp = [sub for sub in self.submissions if self.submissions[sub]['step'] == '1_comp']
         print('Compiling {} projects...'.format(len(to_comp)))
         root_dir = os.getcwd()
         for sub in to_comp:
             os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
-            completed_process = subprocess.run(["make"], capture_output=True, text=True)
-            if completed_process.returncode == 0:
-                self.submissions[sub]['comp_ok'] = True
-                self.submissions[sub]['comp_pts'] = self.pass_count < 2
-            self.submissions[sub]['comp_error'] = completed_process.stderr
-        to_comp = {sub: self.submissions[sub] for sub in self.submissions if self.submissions[sub]['comp_ok'] == False}
+            for c in self.cmd:
+                completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
+                if completed_process.returncode == 0:
+                    self.submissions[sub]['step'] = '2_exec'
+                    if len(completed_process.stderr) > 0:
+                        self.submissions[sub]['steps']['1_comp'][c] = completed_process.stderr
+        to_comp = [sub for sub in self.submissions if self.submissions[sub]['step'] == '1_comp']
         print('          {} fails.'.format(len(to_comp)))
         os.chdir(root_dir)
     def execute(self, cmd):

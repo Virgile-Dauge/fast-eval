@@ -2,7 +2,6 @@
 import argparse
 from fast_eval.util import FastEval
 def main():
-    print('coucou')
     parser = argparse.ArgumentParser()
     parser.add_argument("config",
                         help="path of json config file")
