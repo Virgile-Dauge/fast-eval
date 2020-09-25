@@ -447,38 +447,13 @@ tree .
               if completed_process.returncode == 0:
                   self.submissions[sub]['step'] = self.next_step(step)
                   if len(completed_process.stderr) > 0:
-                      self.submissions[sub]['steps'][step][c] = completed_process.stderr
+                      self.submissions[sub]['steps'][step][c] = completed_process.stderr.split('\n')
 
       os.chdir(root_dir)
       to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
       print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
 
 #+end_src
-
-#+begin_src python
-  def exec_step(self):
-      to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == '2_exec']
-      print('Executing  {} projects...'.format(len(to_exec)))
-      root_dir = os.getcwd()
-      for sub in to_exec:
-          os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
-          completed_process = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-          if completed_process.returncode != 0:
-              #print(completed_process.returncode, completed_process.stderr)
-              self.submissions[sub]['exec_error'] = completed_process.stderr
-          else:
-              self.submissions[sub]['exec_ok'] = True
-              self.submissions[sub]['exec_pts'] = self.pass_count < 2
-              mark_line = [i for i in completed_process.stdout.split('\n') if i][-3]
-              mark = float([i for i in mark_line.split(' ') if i][-1])
-              self.submissions[sub]['mark'] = mark
-              #print(mark, mark_line)
-      os.chdir(root_dir)
-      to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == '2_exec']
-      print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
-
-#+end_src
-
 * Déploiement vers Pypi
 
 #+BEGIN_SRC bash :results output

@@ -206,7 +206,7 @@ class FastEval:
                 if completed_process.returncode == 0:
                     self.submissions[sub]['step'] = self.next_step(step)
                     if len(completed_process.stderr) > 0:
-                        self.submissions[sub]['steps'][step][c] = completed_process.stderr
+                        self.submissions[sub]['steps'][step][c] = completed_process.stderr.split('\n')
     
         os.chdir(root_dir)
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
