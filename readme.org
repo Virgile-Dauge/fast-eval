@@ -94,7 +94,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.0',
+    version='0.2.1',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -512,24 +512,24 @@ writing top-level names to fast_eval.egg-info/top_level.txt
 reading manifest file 'fast_eval.egg-info/SOURCES.txt'
 writing manifest file 'fast_eval.egg-info/SOURCES.txt'
 running check
-creating fast-eval-0.2.0
-creating fast-eval-0.2.0/fast_eval
-creating fast-eval-0.2.0/fast_eval.egg-info
-copying files to fast-eval-0.2.0...
-copying setup.py -> fast-eval-0.2.0
-copying fast_eval/__init__.py -> fast-eval-0.2.0/fast_eval
-copying fast_eval/__main__.py -> fast-eval-0.2.0/fast_eval
-copying fast_eval/util.py -> fast-eval-0.2.0/fast_eval
-copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.0/fast_eval.egg-info
-copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.0/fast_eval.egg-info
-copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.0/fast_eval.egg-info
-copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.0/fast_eval.egg-info
-copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.0/fast_eval.egg-info
-copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.0/fast_eval.egg-info
-Writing fast-eval-0.2.0/setup.cfg
+creating fast-eval-0.2.1
+creating fast-eval-0.2.1/fast_eval
+creating fast-eval-0.2.1/fast_eval.egg-info
+copying files to fast-eval-0.2.1...
+copying setup.py -> fast-eval-0.2.1
+copying fast_eval/__init__.py -> fast-eval-0.2.1/fast_eval
+copying fast_eval/__main__.py -> fast-eval-0.2.1/fast_eval
+copying fast_eval/util.py -> fast-eval-0.2.1/fast_eval
+copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.1/fast_eval.egg-info
+copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.1/fast_eval.egg-info
+copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.1/fast_eval.egg-info
+copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.1/fast_eval.egg-info
+copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.1/fast_eval.egg-info
+copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.1/fast_eval.egg-info
+Writing fast-eval-0.2.1/setup.cfg
 creating dist
 Creating tar archive
-removing 'fast-eval-0.2.0' (and everything under it)
+removing 'fast-eval-0.2.1' (and everything under it)
 #+end_example
 
 #+BEGIN_SRC bash

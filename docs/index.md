@@ -1,31 +1,31 @@
-- [Mode d'emploi](#orgb08e66b)
-  - [Installation](#org2023432)
-  - [Fichier de configuration](#org02e975c)
-  - [Usage](#org5eb83e5)
-- [Concept](#orgc11a466)
-  - [Pourquoi ?](#org3ddfdcb)
-  - [Comment ?](#orga5fb0b5)
-- [Implémentation](#orga7e0d29)
-  - [Package declaration](#orgf7ed530)
-    - [Fichier de setup](#org666e359)
-  - [Cli](#org0154e9e)
-  - [Dépendances](#orgbca24e7)
-  - [Class](#orge3cf804)
-    - [Init](#orge899956)
-    - [Print Helpers](#orgeb8bc59)
-    - [Json data files](#orgd2c47c3)
-    - [Préparation](#orgf9dbbb0)
-    - [Compilation](#orgf057a59)
-- [Déploiement vers Pypi](#org8fa2f4d)
-- [Github Pages](#orga431284)
+- [Mode d'emploi](#org971a881)
+  - [Installation](#org73a647c)
+  - [Fichier de configuration](#org46b4f71)
+  - [Usage](#org18cb267)
+- [Concept](#org0d5d720)
+  - [Pourquoi ?](#org6f7b565)
+  - [Comment ?](#org9177226)
+- [Implémentation](#org79f04af)
+  - [Package declaration](#org0cadcb2)
+    - [Fichier de setup](#orgc3b73a8)
+  - [Cli](#orgeeb560e)
+  - [Dépendances](#org4573e8d)
+  - [Class](#orgda1dbb3)
+    - [Init](#org5d2721b)
+    - [Print Helpers](#org2b87e11)
+    - [Json data files](#org2b44bad)
+    - [Préparation](#orgf117eed)
+    - [Compilation](#orga41175a)
+- [Déploiement vers Pypi](#org7bc6d38)
+- [Github Pages](#org949f6e1)
 
 
-<a id="orgb08e66b"></a>
+<a id="org971a881"></a>
 
 # TODO Mode d'emploi
 
 
-<a id="org2023432"></a>
+<a id="org73a647c"></a>
 
 ## Installation
 
@@ -34,7 +34,7 @@ pip install fast-eval
 ```
 
 
-<a id="org02e975c"></a>
+<a id="org46b4f71"></a>
 
 ## Fichier de configuration
 
@@ -62,7 +62,7 @@ Champs à adapter :
 ```
 
 
-<a id="org5eb83e5"></a>
+<a id="org18cb267"></a>
 
 ## Usage
 
@@ -81,12 +81,12 @@ fast-eval -h
       --ws WS       where to build workspace
 
 
-<a id="orgc11a466"></a>
+<a id="org0d5d720"></a>
 
 # Concept
 
 
-<a id="org3ddfdcb"></a>
+<a id="org6f7b565"></a>
 
 ## Pourquoi ?
 
@@ -101,7 +101,7 @@ L'objectif de ce projet est de faciliter l'évaluation de TPs d'info. Générale
 -   **Exécution et évaluation:** Faire tourner le programme et voir ce que cela donne. Une partie plus ou moins couvrante peut être déléguée à des logiciels de tests, permettant d'avoir rapidement une idée de la pertinence de la solution soumise.
 
 
-<a id="orga5fb0b5"></a>
+<a id="org9177226"></a>
 
 ## Comment ?
 
@@ -110,17 +110,17 @@ Automatisation de la préparation, compilation et pourquoi pas d'une partie de l
 Cette automatisation ce concrétise par un programme python permettant de faire une grosse partie du travail fastidieux et répétitif nécessaire lors de l'évaluation de TPs/projets.
 
 
-<a id="orga7e0d29"></a>
+<a id="org79f04af"></a>
 
 # Implémentation
 
 
-<a id="orgf7ed530"></a>
+<a id="org0cadcb2"></a>
 
 ## Package declaration
 
 
-<a id="org666e359"></a>
+<a id="orgc3b73a8"></a>
 
 ### Fichier de setup
 
@@ -166,7 +166,7 @@ tree .
 ```
 
 
-<a id="org0154e9e"></a>
+<a id="orgeeb560e"></a>
 
 ## Cli
 
@@ -187,7 +187,7 @@ def main():
 ```
 
 
-<a id="orgbca24e7"></a>
+<a id="org4573e8d"></a>
 
 ## Dépendances
 
@@ -226,12 +226,12 @@ def choice_str(choices, target=''):
 ```
 
 
-<a id="orge3cf804"></a>
+<a id="orgda1dbb3"></a>
 
 ## TODO Class
 
 
-<a id="orge899956"></a>
+<a id="org5d2721b"></a>
 
 ### Init
 
@@ -298,18 +298,20 @@ class FastEval:
         if self.pass_count == 0:
             shutil.unpack_archive(self.archive_path, self.workspace_path)
             submissions = self.clean_dirs()
-            print('Processing {} projects...\n'.format(len(self.submissions)))
+            print('Processing {} projects...\n'.format(len(submissions)))
             self.submissions = {key: dict(value, **{'step' : '0_prep', 'steps': {'0_prep' : {},
                                                                                  '1_comp' : {},
                                                                                  '2_exec' : {},
                                                                                  '3_eval' : {}}}) for key, value in submissions.items()}
             self.extract_dirs()
             self.copy_ref()
+            print('\n')
+            self.prep_step()
         else:
             print('Processing {} projects...\n'.format(len(self.submissions)))
-        self.prep_step()
+        self.check_prep()
         self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
-        #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+        self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
         self.write_data()
 
     def load_data(self):
@@ -403,6 +405,23 @@ class FastEval:
 
         to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
         print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
+    def check_prep(self):
+        to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
+        print('Checking   {} projects...'.format(len(to_check)))
+        for sub in to_check:
+            eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
+            eval_files = [f for root, dirs, files in os.walk(eval_dir) for f in files]
+
+
+            missing_files = [f for f in self.required_files if f not in eval_files]
+            # Update missing files if needed
+            if missing_files:
+                self.submissions[sub]['steps']['0_prep']['missing_files'] = missing_files
+            else:
+                self.submissions[sub]['step'] = '1_comp'
+
+        to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
+        print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
     def exte_step(self, cmd, step='1_comp', label='Compiling'):
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
         print('{}  {} projects...'.format(label, len(to_exec)))
@@ -413,8 +432,13 @@ class FastEval:
                 completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
                 if completed_process.returncode == 0:
                     self.submissions[sub]['step'] = self.next_step(step)
-                    if len(completed_process.stderr) > 0:
-                        self.submissions[sub]['steps'][step][c] = completed_process.stderr.split('\n')
+                    cond = [len(completed_process.stderr) > 0, len(completed_process.stdout) > 0]
+                    if any(cond):
+                        self.submissions[sub]['steps'][step][c] = {}
+                    if cond[0]:
+                        self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
+                    if cond[1]:
+                        self.submissions[sub]['steps'][step][c]['stdout'] = completed_process.stdout.split('\n')
 
         os.chdir(root_dir)
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
@@ -440,7 +464,7 @@ class FastEval:
 ```
 
 
-<a id="orgeb8bc59"></a>
+<a id="org2b87e11"></a>
 
 ### Print Helpers
 
@@ -469,7 +493,7 @@ def info_str(self, msg):
 ```
 
 
-<a id="orgd2c47c3"></a>
+<a id="org2b44bad"></a>
 
 ### Json data files
 
@@ -506,7 +530,7 @@ def write_data(self):
 ```
 
 
-<a id="orgf9dbbb0"></a>
+<a id="orgf117eed"></a>
 
 ### Préparation
 
@@ -600,8 +624,28 @@ def search_files(directory='.', extension=''):
     return found
 ```
 
+```python
+def check_prep(self):
+    to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
+    print('Checking   {} projects...'.format(len(to_check)))
+    for sub in to_check:
+        eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
+        eval_files = [f for root, dirs, files in os.walk(eval_dir) for f in files]
 
-<a id="orgf057a59"></a>
+
+        missing_files = [f for f in self.required_files if f not in eval_files]
+        # Update missing files if needed
+        if missing_files:
+            self.submissions[sub]['steps']['0_prep']['missing_files'] = missing_files
+        else:
+            self.submissions[sub]['step'] = '1_comp'
+
+    to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
+    print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
+```
+
+
+<a id="orga41175a"></a>
 
 ### Compilation
 
@@ -628,8 +672,13 @@ def exte_step(self, cmd, step='1_comp', label='Compiling'):
             completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
             if completed_process.returncode == 0:
                 self.submissions[sub]['step'] = self.next_step(step)
-                if len(completed_process.stderr) > 0:
-                    self.submissions[sub]['steps'][step][c] = completed_process.stderr.split('\n')
+                cond = [len(completed_process.stderr) > 0, len(completed_process.stdout) > 0]
+                if any(cond):
+                    self.submissions[sub]['steps'][step][c] = {}
+                if cond[0]:
+                    self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
+                if cond[1]:
+                    self.submissions[sub]['steps'][step][c]['stdout'] = completed_process.stdout.split('\n')
 
     os.chdir(root_dir)
     to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
@@ -638,7 +687,7 @@ def exte_step(self, cmd, step='1_comp', label='Compiling'):
 ```
 
 
-<a id="org8fa2f4d"></a>
+<a id="org7bc6d38"></a>
 
 # Déploiement vers Pypi
 
@@ -652,7 +701,7 @@ twine upload dist/*
 ```
 
 
-<a id="orga431284"></a>
+<a id="org949f6e1"></a>
 
 # Github Pages
 
