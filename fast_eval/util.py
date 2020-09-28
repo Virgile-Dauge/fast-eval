@@ -102,7 +102,7 @@ class FastEval:
             print('Processing {} projects...\n'.format(len(self.submissions)))
         self.prep_step()
         self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
-        #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+        self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
         self.write_data()
 
     def load_data(self):
@@ -206,8 +206,13 @@ class FastEval:
                 completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
                 if completed_process.returncode == 0:
                     self.submissions[sub]['step'] = self.next_step(step)
-                    if len(completed_process.stderr) > 0:
-                        self.submissions[sub]['steps'][step][c] = completed_process.stderr.split('\n')
+                    cond = [len(completed_process.stderr) > 0, len(completed_process.stdout) > 0]
+                    if any(cond):
+                        self.submissions[sub]['steps'][step][c] = {}
+                    if cond[0]:
+                        self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
+                    if cond[1]:
+                        self.submissions[sub]['steps'][step][c]['stdout'] = completed_process.stdout.split('\n')
     
         os.chdir(root_dir)
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
