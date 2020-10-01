@@ -61,11 +61,12 @@ class FastEval:
                   file=sys.stderr)
             sys.exit()
 
-        config = os.path.expanduser(args.config)
-        assert os.path.isfile(config), "{} is not a file.".format(config)
+        config_path = os.path.expanduser(args.config)
+        assert os.path.isfile(config_path), "{} is not a file.".format(self.erro_str(config_path))
 
-        with open(config, 'r') as fp:
+        with open(config_path, 'r') as fp:
             config = json.load(fp)
+        print('Loaded ' + self.info_str(config_path) + ' savefile.')
         self.required_files = config['required_files']
 
         if len(config['reference_folder']) > 0:
@@ -147,11 +148,12 @@ class FastEval:
             for o in os.listdir(self.submissions[sub]['path']):
                 shutil.move(os.path.join(self.submissions[sub]['path'],o), raw_dir)
             files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
-            try:
-                shutil.unpack_archive(files[0], raw_dir)
-                os.remove(files[0])
-            except shutil.ReadError:
-                print('Unpack ' + self.warn_str(files[0]) + ' failed.')
+            for f in files:
+                try:
+                    shutil.unpack_archive(f, raw_dir)
+                    os.remove(f)
+                except shutil.ReadError:
+                    print('Unpack ' + self.warn_str(f) + ' failed.')
     
     def copy_ref(self):
         if self.ref_path is not None:
