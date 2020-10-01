@@ -94,7 +94,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.0',
+    version='0.2.1',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -252,11 +252,12 @@ tree .
               self.extract_dirs()
               self.copy_ref()
               print('\n')
+              self.prep_step()
           else:
               print('Processing {} projects...\n'.format(len(self.submissions)))
-          self.prep_step()
+          self.check_prep()
           self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
-          #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+          self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
           self.write_data()
 
       <<load_data>>
@@ -265,6 +266,7 @@ tree .
       <<extract_dirs>>
       <<copy_ref>>
       <<prep_step>>
+      <<check_prep>>
       <<exte_step>>
       <<next_step>>
       <<erro_str>>
@@ -433,6 +435,26 @@ tree .
       return found
 #+end_src
 
+#+name: check_prep
+#+begin_src python
+  def check_prep(self):
+      to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
+      print('Checking   {} projects...'.format(len(to_check)))
+      for sub in to_check:
+          eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
+          eval_files = [f for root, dirs, files in os.walk(eval_dir) for f in files]
+
+
+          missing_files = [f for f in self.required_files if f not in eval_files]
+          # Update missing files if needed
+          if missing_files:
+              self.submissions[sub]['steps']['0_prep']['missing_files'] = missing_files
+          else:
+              self.submissions[sub]['step'] = '1_comp'
+
+      to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
+      print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
+#+end_src
 *** Compilation
 
 #+name: next_step
@@ -460,8 +482,13 @@ tree .
               completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
               if completed_process.returncode == 0:
                   self.submissions[sub]['step'] = self.next_step(step)
-                  if len(completed_process.stderr) > 0:
-                      self.submissions[sub]['steps'][step][c] = completed_process.stderr.split('\n')
+                  cond = [len(completed_process.stderr) > 0, len(completed_process.stdout) > 0]
+                  if any(cond):
+                      self.submissions[sub]['steps'][step][c] = {}
+                  if cond[0]:
+                      self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
+                  if cond[1]:
+                      self.submissions[sub]['steps'][step][c]['stdout'] = completed_process.stdout.split('\n')
 
       os.chdir(root_dir)
       to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
@@ -487,24 +514,24 @@ writing top-level names to fast_eval.egg-info/top_level.txt
 reading manifest file 'fast_eval.egg-info/SOURCES.txt'
 writing manifest file 'fast_eval.egg-info/SOURCES.txt'
 running check
-creating fast-eval-0.2.0
-creating fast-eval-0.2.0/fast_eval
-creating fast-eval-0.2.0/fast_eval.egg-info
-copying files to fast-eval-0.2.0...
-copying setup.py -> fast-eval-0.2.0
-copying fast_eval/__init__.py -> fast-eval-0.2.0/fast_eval
-copying fast_eval/__main__.py -> fast-eval-0.2.0/fast_eval
-copying fast_eval/util.py -> fast-eval-0.2.0/fast_eval
-copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.0/fast_eval.egg-info
-copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.0/fast_eval.egg-info
-copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.0/fast_eval.egg-info
-copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.0/fast_eval.egg-info
-copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.0/fast_eval.egg-info
-copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.0/fast_eval.egg-info
-Writing fast-eval-0.2.0/setup.cfg
+creating fast-eval-0.2.1
+creating fast-eval-0.2.1/fast_eval
+creating fast-eval-0.2.1/fast_eval.egg-info
+copying files to fast-eval-0.2.1...
+copying setup.py -> fast-eval-0.2.1
+copying fast_eval/__init__.py -> fast-eval-0.2.1/fast_eval
+copying fast_eval/__main__.py -> fast-eval-0.2.1/fast_eval
+copying fast_eval/util.py -> fast-eval-0.2.1/fast_eval
+copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.1/fast_eval.egg-info
+copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.1/fast_eval.egg-info
+copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.1/fast_eval.egg-info
+copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.1/fast_eval.egg-info
+copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.1/fast_eval.egg-info
+copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.1/fast_eval.egg-info
+Writing fast-eval-0.2.1/setup.cfg
 creating dist
 Creating tar archive
-removing 'fast-eval-0.2.0' (and everything under it)
+removing 'fast-eval-0.2.1' (and everything under it)
 #+end_example
 
 #+BEGIN_SRC bash
