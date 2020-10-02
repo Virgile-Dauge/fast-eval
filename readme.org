@@ -96,7 +96,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.3',
+    version='0.2.4',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -209,7 +209,7 @@ tree .
               #self.workspace_path = os.path.expanduser(args.ws)
           else:
               self.workspace_path = os.path.join(os.getcwd(), 'submissions')
-          print('Using  {} as workspace'.format(self.info_str(self.workspace_path)))
+          print(f'Using  {self.info_str(self.workspace_path)} as workspace.')
 
           self.archive_path = os.path.expanduser(args.archive_path)
           if not os.path.exists(self.archive_path):
@@ -411,9 +411,10 @@ tree .
           # Search every required files one by one
           for f in self.required_files:
               # List cadidates for searched file
-              student_code = search_files(raw_dir, f)
+              student_code = search_files(f, raw_dir)
               # Filter files in a "__MACOS" directory
               student_code = [s for s in student_code if '__MACOS' not in s]
+              print(student_code)
               if len(student_code) == 1:
                   shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
               elif len(student_code) == 0:
@@ -437,16 +438,8 @@ tree .
 #+end_src
 #+name: search_files
 #+begin_src python
-  def search_files(directory='.', extension=''):
-      extension = extension.lower()
-      found = []
-      for dirpath, _, files in os.walk(directory):
-          for name in files:
-              if extension and name.lower().endswith(extension):
-                  found.append(os.path.join(dirpath, name))
-              elif not extension:
-                  found.append(os.path.join(dirpath, name))
-      return found
+  def search_files(name, d='.'):
+      return [os.path.join(root, f) for root, _, files in os.walk(d) for f in files if f == name]
 #+end_src
 
 #+name: check_prep
@@ -531,24 +524,24 @@ writing top-level names to fast_eval.egg-info/top_level.txt
 reading manifest file 'fast_eval.egg-info/SOURCES.txt'
 writing manifest file 'fast_eval.egg-info/SOURCES.txt'
 running check
-creating fast-eval-0.2.3
-creating fast-eval-0.2.3/fast_eval
-creating fast-eval-0.2.3/fast_eval.egg-info
-copying files to fast-eval-0.2.3...
-copying setup.py -> fast-eval-0.2.3
-copying fast_eval/__init__.py -> fast-eval-0.2.3/fast_eval
-copying fast_eval/__main__.py -> fast-eval-0.2.3/fast_eval
-copying fast_eval/util.py -> fast-eval-0.2.3/fast_eval
-copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.3/fast_eval.egg-info
-copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.3/fast_eval.egg-info
-copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.3/fast_eval.egg-info
-copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.3/fast_eval.egg-info
-copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.3/fast_eval.egg-info
-copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.3/fast_eval.egg-info
-Writing fast-eval-0.2.3/setup.cfg
+creating fast-eval-0.2.4
+creating fast-eval-0.2.4/fast_eval
+creating fast-eval-0.2.4/fast_eval.egg-info
+copying files to fast-eval-0.2.4...
+copying setup.py -> fast-eval-0.2.4
+copying fast_eval/__init__.py -> fast-eval-0.2.4/fast_eval
+copying fast_eval/__main__.py -> fast-eval-0.2.4/fast_eval
+copying fast_eval/util.py -> fast-eval-0.2.4/fast_eval
+copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.4/fast_eval.egg-info
+copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.4/fast_eval.egg-info
+copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.4/fast_eval.egg-info
+copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.4/fast_eval.egg-info
+copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.4/fast_eval.egg-info
+copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.4/fast_eval.egg-info
+Writing fast-eval-0.2.4/setup.cfg
 creating dist
 Creating tar archive
-removing 'fast-eval-0.2.3' (and everything under it)
+removing 'fast-eval-0.2.4' (and everything under it)
 #+end_example
 
 #+BEGIN_SRC bash

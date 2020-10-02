@@ -13,16 +13,8 @@ import subprocess
 from colored import fg, bg, attr
 # Helpers
 
-def search_files(directory='.', extension=''):
-    extension = extension.lower()
-    found = []
-    for dirpath, _, files in os.walk(directory):
-        for name in files:
-            if extension and name.lower().endswith(extension):
-                found.append(os.path.join(dirpath, name))
-            elif not extension:
-                found.append(os.path.join(dirpath, name))
-    return found
+def search_files(name, d='.'):
+    return [os.path.join(root, f) for root, _, files in os.walk(d) for f in files if f == name]
 def choice_str(choices, target=''):
     res = '. ' + str(target) + '\n' + '│\n'
     for choice in choices[:-1]:
@@ -53,7 +45,7 @@ class FastEval:
             #self.workspace_path = os.path.expanduser(args.ws)
         else:
             self.workspace_path = os.path.join(os.getcwd(), 'submissions')
-        print('Using  {} as workspace'.format(self.info_str(self.workspace_path)))
+        print(f'Using  {self.info_str(self.workspace_path)} as workspace.')
 
         self.archive_path = os.path.expanduser(args.archive_path)
         if not os.path.exists(self.archive_path):
@@ -180,9 +172,10 @@ class FastEval:
             # Search every required files one by one
             for f in self.required_files:
                 # List cadidates for searched file
-                student_code = search_files(raw_dir, f)
+                student_code = search_files(f, raw_dir)
                 # Filter files in a "__MACOS" directory
                 student_code = [s for s in student_code if '__MACOS' not in s]
+                print(student_code)
                 if len(student_code) == 1:
                     shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
                 elif len(student_code) == 0:

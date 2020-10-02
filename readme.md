@@ -1,27 +1,27 @@
-- [Implémentation](#org51393fc)
-  - [Package declaration](#org1e41e53)
-    - [Fichier de setup](#org295dde8)
-  - [Cli](#org645262e)
-  - [Dépendances](#orgfc8168a)
-  - [Class](#org5205290)
-    - [Init](#org1e56012)
-    - [Print Helpers](#org39f201f)
-    - [Json data files](#orgf301ba4)
-    - [Préparation](#org80e88e5)
-    - [Compilation](#org29beef7)
+- [Implémentation](#org87f0c79)
+  - [Package declaration](#orge79a200)
+    - [Fichier de setup](#org8b7f928)
+  - [Cli](#org8f74640)
+  - [Dépendances](#org4bf35e4)
+  - [Class](#org7cc0731)
+    - [Init](#orgd0ce1bf)
+    - [Print Helpers](#orgd67ab08)
+    - [Json data files](#org3b7bce3)
+    - [Préparation](#orgf18ee69)
+    - [Compilation](#org90ecbe0)
 
 
-<a id="org51393fc"></a>
+<a id="org87f0c79"></a>
 
 # Implémentation
 
 
-<a id="org1e41e53"></a>
+<a id="orge79a200"></a>
 
 ## Package declaration
 
 
-<a id="org295dde8"></a>
+<a id="org8b7f928"></a>
 
 ### Fichier de setup
 
@@ -32,7 +32,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.2',
+    version='0.2.3',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -67,7 +67,7 @@ tree .
 ```
 
 
-<a id="org645262e"></a>
+<a id="org8f74640"></a>
 
 ## Cli
 
@@ -89,7 +89,7 @@ def main():
 ```
 
 
-<a id="orgfc8168a"></a>
+<a id="org4bf35e4"></a>
 
 ## Dépendances
 
@@ -109,16 +109,8 @@ import subprocess
 from colored import fg, bg, attr
 # Helpers
 
-def search_files(directory='.', extension=''):
-    extension = extension.lower()
-    found = []
-    for dirpath, _, files in os.walk(directory):
-        for name in files:
-            if extension and name.lower().endswith(extension):
-                found.append(os.path.join(dirpath, name))
-            elif not extension:
-                found.append(os.path.join(dirpath, name))
-    return found
+def search_files(name, d='.'):
+    return [os.path.join(root, f) for root, _, files in os.walk(d) for f in files if f == name]
 def choice_str(choices, target=''):
     res = '. ' + str(target) + '\n' + '│\n'
     for choice in choices[:-1]:
@@ -128,12 +120,12 @@ def choice_str(choices, target=''):
 ```
 
 
-<a id="org5205290"></a>
+<a id="org7cc0731"></a>
 
 ## TODO Class
 
 
-<a id="org1e56012"></a>
+<a id="orgd0ce1bf"></a>
 
 ### Init
 
@@ -163,7 +155,7 @@ class FastEval:
             #self.workspace_path = os.path.expanduser(args.ws)
         else:
             self.workspace_path = os.path.join(os.getcwd(), 'submissions')
-        print('Using  {} as workspace'.format(self.info_str(self.workspace_path)))
+        print(f'Using  {self.info_str(self.workspace_path)} as workspace.')
 
         self.archive_path = os.path.expanduser(args.archive_path)
         if not os.path.exists(self.archive_path):
@@ -290,9 +282,10 @@ class FastEval:
             # Search every required files one by one
             for f in self.required_files:
                 # List cadidates for searched file
-                student_code = search_files(raw_dir, f)
+                student_code = search_files(f, raw_dir)
                 # Filter files in a "__MACOS" directory
                 student_code = [s for s in student_code if '__MACOS' not in s]
+                print(student_code)
                 if len(student_code) == 1:
                     shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
                 elif len(student_code) == 0:
@@ -374,7 +367,7 @@ class FastEval:
 ```
 
 
-<a id="org39f201f"></a>
+<a id="orgd67ab08"></a>
 
 ### Print Helpers
 
@@ -408,7 +401,7 @@ def print_prep(self):
 ```
 
 
-<a id="orgf301ba4"></a>
+<a id="org3b7bce3"></a>
 
 ### Json data files
 
@@ -445,7 +438,7 @@ def write_data(self):
 ```
 
 
-<a id="org80e88e5"></a>
+<a id="orgf18ee69"></a>
 
 ### Préparation
 
@@ -502,9 +495,10 @@ def prep_step(self):
         # Search every required files one by one
         for f in self.required_files:
             # List cadidates for searched file
-            student_code = search_files(raw_dir, f)
+            student_code = search_files(f, raw_dir)
             # Filter files in a "__MACOS" directory
             student_code = [s for s in student_code if '__MACOS' not in s]
+            print(student_code)
             if len(student_code) == 1:
                 shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
             elif len(student_code) == 0:
@@ -528,16 +522,8 @@ def prep_step(self):
 ```
 
 ```python
-def search_files(directory='.', extension=''):
-    extension = extension.lower()
-    found = []
-    for dirpath, _, files in os.walk(directory):
-        for name in files:
-            if extension and name.lower().endswith(extension):
-                found.append(os.path.join(dirpath, name))
-            elif not extension:
-                found.append(os.path.join(dirpath, name))
-    return found
+def search_files(name, d='.'):
+    return [os.path.join(root, f) for root, _, files in os.walk(d) for f in files if f == name]
 ```
 
 ```python
@@ -561,7 +547,7 @@ def check_prep(self):
 ```
 
 
-<a id="org29beef7"></a>
+<a id="org90ecbe0"></a>
 
 ### Compilation
 
