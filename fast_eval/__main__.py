@@ -7,7 +7,7 @@ def main():
                         help="path of json config file")
     parser.add_argument("archive_path",
                         help="path of archive from arche")
-    parser.add_argument("--ws",
+    parser.add_argument("-ws", "--workspace",
                         help="where to build workspace")
     parser.add_argument("-v", "--verbosity",
                         help="increase output verbosity",

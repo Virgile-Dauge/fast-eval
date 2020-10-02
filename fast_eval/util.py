@@ -37,10 +37,11 @@ class FastEval:
         #self.wcolor = bg('orange_1') + fg('white')
         self.wcolor = fg('orange_1')
         #self.icolor = bg('deep_sky_blue_2') + fg('white')
-        self.icolor = fg('deep_sky_blue_2')
+        #self.icolor = fg('medium_turquoise') + attr('bold')
+        self.icolor = fg('light_sea_green') + attr('bold')
         self.rcolor = attr('reset')
-        if args.ws:
-            self.workspace_path = os.path.abspath(os.path.expanduser(args.ws))
+        if args.workspace:
+            self.workspace_path = os.path.abspath(os.path.expanduser(args.workspace))
         else:
             self.workspace_path = os.path.join(os.getcwd(), 'submissions')
         print(f'Using  {self.info_str(self.workspace_path)} as workspace. {self.info_str("✓")}')

@@ -1,31 +1,31 @@
-- [Mode d'emploi](#org2671975)
-  - [Installation](#org4d56dbb)
-  - [Fichier de configuration](#org0fe5554)
-  - [Usage](#orgc7f90e8)
-- [Concept](#orgfc5a754)
-  - [Pourquoi ?](#org85e770d)
-  - [Comment ?](#org37d7b4a)
-- [Implémentation](#org77dbffd)
-  - [Package declaration](#org3a1a182)
-    - [Fichier de setup](#org6d38f4c)
-  - [Cli](#org47fd64b)
-  - [Dépendances](#org3eb4ec6)
-  - [Class](#org4f32b06)
-    - [Init](#orge7dceba)
-    - [Print Helpers](#org90567e7)
-    - [Json data files](#org0ca268d)
-    - [Préparation](#org0f0dc5b)
-    - [Compilation](#org7d0be35)
-- [Déploiement vers Pypi](#org9ff321b)
-- [Github Pages](#orge895569)
+- [Mode d'emploi](#org48c3817)
+  - [Installation](#org1701640)
+  - [Fichier de configuration](#orgcada118)
+  - [Usage](#org65c91cd)
+- [Concept](#org96387ca)
+  - [Pourquoi ?](#orgaa5e89b)
+  - [Comment ?](#orgeb6355f)
+- [Implémentation](#org970686a)
+  - [Package declaration](#org37a1c4c)
+    - [Fichier de setup](#org518782d)
+  - [Cli](#orgea6d15e)
+  - [Dépendances](#org9f10d86)
+  - [Class](#org6e6b3b6)
+    - [Init](#org3e155b9)
+    - [Print Helpers](#org0fc539e)
+    - [Json data files](#org74b6129)
+    - [Préparation](#org5148199)
+    - [Compilation](#orgcb2169a)
+- [Déploiement vers Pypi](#orgf7785ae)
+- [Github Pages](#orgaa1b01d)
 
 
-<a id="org2671975"></a>
+<a id="org48c3817"></a>
 
 # TODO Mode d'emploi
 
 
-<a id="org4d56dbb"></a>
+<a id="org1701640"></a>
 
 ## Installation
 
@@ -34,7 +34,7 @@ pip install fast-eval
 ```
 
 
-<a id="org0fe5554"></a>
+<a id="orgcada118"></a>
 
 ## Fichier de configuration
 
@@ -67,7 +67,7 @@ Champs à adapter :
 ```
 
 
-<a id="orgc7f90e8"></a>
+<a id="org65c91cd"></a>
 
 ## Usage
 
@@ -75,7 +75,7 @@ Champs à adapter :
 fast-eval -h
 ```
 
-    usage: fast-eval [-h] [--ws WS] [-v {0,1,2}] config archive_path
+    usage: fast-eval [-h] [-ws WORKSPACE] [-v {0,1,2}] config archive_path
 
     positional arguments:
       config                path of json config file
@@ -83,17 +83,18 @@ fast-eval -h
 
     optional arguments:
       -h, --help            show this help message and exit
-      --ws WS               where to build workspace
+      -ws WORKSPACE, --workspace WORKSPACE
+                            where to build workspace
       -v {0,1,2}, --verbosity {0,1,2}
                             increase output verbosity
 
 
-<a id="orgfc5a754"></a>
+<a id="org96387ca"></a>
 
 # Concept
 
 
-<a id="org85e770d"></a>
+<a id="orgaa5e89b"></a>
 
 ## Pourquoi ?
 
@@ -108,7 +109,7 @@ L'objectif de ce projet est de faciliter l'évaluation de TPs d'info. Générale
 -   **Exécution et évaluation:** Faire tourner le programme et voir ce que cela donne. Une partie plus ou moins couvrante peut être déléguée à des logiciels de tests, permettant d'avoir rapidement une idée de la pertinence de la solution soumise.
 
 
-<a id="org37d7b4a"></a>
+<a id="orgeb6355f"></a>
 
 ## Comment ?
 
@@ -117,17 +118,17 @@ Automatisation de la préparation, compilation et pourquoi pas d'une partie de l
 Cette automatisation ce concrétise par un programme python permettant de faire une grosse partie du travail fastidieux et répétitif nécessaire lors de l'évaluation de TPs/projets.
 
 
-<a id="org77dbffd"></a>
+<a id="org970686a"></a>
 
 # Implémentation
 
 
-<a id="org3a1a182"></a>
+<a id="org37a1c4c"></a>
 
 ## Package declaration
 
 
-<a id="org6d38f4c"></a>
+<a id="org518782d"></a>
 
 ### Fichier de setup
 
@@ -138,7 +139,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.4',
+    version='0.2.5',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -173,7 +174,7 @@ tree .
 ```
 
 
-<a id="org47fd64b"></a>
+<a id="orgea6d15e"></a>
 
 ## Cli
 
@@ -187,7 +188,7 @@ def main():
                         help="path of json config file")
     parser.add_argument("archive_path",
                         help="path of archive from arche")
-    parser.add_argument("--ws",
+    parser.add_argument("-ws", "--workspace",
                         help="where to build workspace")
     parser.add_argument("-v", "--verbosity",
                         help="increase output verbosity",
@@ -196,7 +197,7 @@ def main():
 ```
 
 
-<a id="org3eb4ec6"></a>
+<a id="org9f10d86"></a>
 
 ## Dépendances
 
@@ -227,12 +228,12 @@ def choice_str(choices, target=''):
 ```
 
 
-<a id="org4f32b06"></a>
+<a id="org6e6b3b6"></a>
 
 ## TODO Class
 
 
-<a id="orge7dceba"></a>
+<a id="org3e155b9"></a>
 
 ### Init
 
@@ -254,10 +255,11 @@ class FastEval:
         #self.wcolor = bg('orange_1') + fg('white')
         self.wcolor = fg('orange_1')
         #self.icolor = bg('deep_sky_blue_2') + fg('white')
-        self.icolor = fg('deep_sky_blue_2')
+        #self.icolor = fg('medium_turquoise') + attr('bold')
+        self.icolor = fg('light_sea_green') + attr('bold')
         self.rcolor = attr('reset')
-        if args.ws:
-            self.workspace_path = os.path.abspath(os.path.expanduser(args.ws))
+        if args.workspace:
+            self.workspace_path = os.path.abspath(os.path.expanduser(args.workspace))
         else:
             self.workspace_path = os.path.join(os.getcwd(), 'submissions')
         print(f'Using  {self.info_str(self.workspace_path)} as workspace. {self.info_str("✓")}')
@@ -487,7 +489,7 @@ class FastEval:
 ```
 
 
-<a id="org90567e7"></a>
+<a id="org0fc539e"></a>
 
 ### Print Helpers
 
@@ -527,7 +529,7 @@ def print_step_errors(self, step):
 ```
 
 
-<a id="org0ca268d"></a>
+<a id="org74b6129"></a>
 
 ### Json data files
 
@@ -564,7 +566,7 @@ def write_data(self):
 ```
 
 
-<a id="org0f0dc5b"></a>
+<a id="org5148199"></a>
 
 ### Préparation
 
@@ -675,7 +677,7 @@ def check_prep(self):
 ```
 
 
-<a id="org7d0be35"></a>
+<a id="orgcb2169a"></a>
 
 ### Compilation
 
@@ -722,7 +724,7 @@ def exte_step(self, cmd, step='1_comp', label='Compiling'):
 ```
 
 
-<a id="org9ff321b"></a>
+<a id="orgf7785ae"></a>
 
 # Déploiement vers Pypi
 
@@ -736,7 +738,7 @@ twine upload dist/*
 ```
 
 
-<a id="orge895569"></a>
+<a id="orgaa1b01d"></a>
 
 # Github Pages
 
