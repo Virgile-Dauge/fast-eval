@@ -1,31 +1,31 @@
-- [Mode d'emploi](#org0221d8d)
-  - [Installation](#orgfd3a01b)
-  - [Fichier de configuration](#org80e2b8d)
-  - [Usage](#org3528503)
-- [Concept](#orga2eb053)
-  - [Pourquoi ?](#org470f266)
-  - [Comment ?](#orgfa255af)
-- [Implémentation](#org7ea2b8f)
-  - [Package declaration](#org3b28e97)
-    - [Fichier de setup](#org5d51af1)
-  - [Cli](#org1a5b5c4)
-  - [Dépendances](#orgeb19615)
-  - [Class](#org09f4b16)
-    - [Init](#orga3ad18d)
-    - [Print Helpers](#org7bb8a17)
-    - [Json data files](#org3da5629)
-    - [Préparation](#org0bc21ea)
-    - [Compilation](#org767d300)
-- [Déploiement vers Pypi](#orga1ed9dc)
-- [Github Pages](#org18b3dd1)
+- [Mode d'emploi](#org2671975)
+  - [Installation](#org4d56dbb)
+  - [Fichier de configuration](#org0fe5554)
+  - [Usage](#orgc7f90e8)
+- [Concept](#orgfc5a754)
+  - [Pourquoi ?](#org85e770d)
+  - [Comment ?](#org37d7b4a)
+- [Implémentation](#org77dbffd)
+  - [Package declaration](#org3a1a182)
+    - [Fichier de setup](#org6d38f4c)
+  - [Cli](#org47fd64b)
+  - [Dépendances](#org3eb4ec6)
+  - [Class](#org4f32b06)
+    - [Init](#orge7dceba)
+    - [Print Helpers](#org90567e7)
+    - [Json data files](#org0ca268d)
+    - [Préparation](#org0f0dc5b)
+    - [Compilation](#org7d0be35)
+- [Déploiement vers Pypi](#org9ff321b)
+- [Github Pages](#orge895569)
 
 
-<a id="org0221d8d"></a>
+<a id="org2671975"></a>
 
 # TODO Mode d'emploi
 
 
-<a id="orgfd3a01b"></a>
+<a id="org4d56dbb"></a>
 
 ## Installation
 
@@ -34,7 +34,7 @@ pip install fast-eval
 ```
 
 
-<a id="org80e2b8d"></a>
+<a id="org0fe5554"></a>
 
 ## Fichier de configuration
 
@@ -67,7 +67,7 @@ Champs à adapter :
 ```
 
 
-<a id="org3528503"></a>
+<a id="orgc7f90e8"></a>
 
 ## Usage
 
@@ -75,24 +75,25 @@ Champs à adapter :
 fast-eval -h
 ```
 
-    usage: fast-eval [-h] [--ws WS] [-v] config archive_path
+    usage: fast-eval [-h] [--ws WS] [-v {0,1,2}] config archive_path
 
     positional arguments:
-      config         path of json config file
-      archive_path   path of archive from arche
+      config                path of json config file
+      archive_path          path of archive from arche
 
     optional arguments:
-      -h, --help     show this help message and exit
-      --ws WS        where to build workspace
-      -v, --verbose  increase output verbosity
+      -h, --help            show this help message and exit
+      --ws WS               where to build workspace
+      -v {0,1,2}, --verbosity {0,1,2}
+                            increase output verbosity
 
 
-<a id="orga2eb053"></a>
+<a id="orgfc5a754"></a>
 
 # Concept
 
 
-<a id="org470f266"></a>
+<a id="org85e770d"></a>
 
 ## Pourquoi ?
 
@@ -107,7 +108,7 @@ L'objectif de ce projet est de faciliter l'évaluation de TPs d'info. Générale
 -   **Exécution et évaluation:** Faire tourner le programme et voir ce que cela donne. Une partie plus ou moins couvrante peut être déléguée à des logiciels de tests, permettant d'avoir rapidement une idée de la pertinence de la solution soumise.
 
 
-<a id="orgfa255af"></a>
+<a id="org37d7b4a"></a>
 
 ## Comment ?
 
@@ -116,17 +117,17 @@ Automatisation de la préparation, compilation et pourquoi pas d'une partie de l
 Cette automatisation ce concrétise par un programme python permettant de faire une grosse partie du travail fastidieux et répétitif nécessaire lors de l'évaluation de TPs/projets.
 
 
-<a id="org7ea2b8f"></a>
+<a id="org77dbffd"></a>
 
 # Implémentation
 
 
-<a id="org3b28e97"></a>
+<a id="org3a1a182"></a>
 
 ## Package declaration
 
 
-<a id="org5d51af1"></a>
+<a id="org6d38f4c"></a>
 
 ### Fichier de setup
 
@@ -172,7 +173,7 @@ tree .
 ```
 
 
-<a id="org1a5b5c4"></a>
+<a id="org47fd64b"></a>
 
 ## Cli
 
@@ -188,13 +189,14 @@ def main():
                         help="path of archive from arche")
     parser.add_argument("--ws",
                         help="where to build workspace")
-    parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                        action="store_true")
+    parser.add_argument("-v", "--verbosity",
+                        help="increase output verbosity",
+                        type=int, choices=[0, 1, 2], default=0)
     fe = FastEval(parser.parse_args())
 ```
 
 
-<a id="orgeb19615"></a>
+<a id="org3eb4ec6"></a>
 
 ## Dépendances
 
@@ -225,12 +227,12 @@ def choice_str(choices, target=''):
 ```
 
 
-<a id="org09f4b16"></a>
+<a id="org4f32b06"></a>
 
 ## TODO Class
 
 
-<a id="orga3ad18d"></a>
+<a id="orge7dceba"></a>
 
 ### Init
 
@@ -254,13 +256,11 @@ class FastEval:
         #self.icolor = bg('deep_sky_blue_2') + fg('white')
         self.icolor = fg('deep_sky_blue_2')
         self.rcolor = attr('reset')
-
         if args.ws:
             self.workspace_path = os.path.abspath(os.path.expanduser(args.ws))
-            #self.workspace_path = os.path.expanduser(args.ws)
         else:
             self.workspace_path = os.path.join(os.getcwd(), 'submissions')
-        print(f'Using  {self.info_str(self.workspace_path)} as workspace.')
+        print(f'Using  {self.info_str(self.workspace_path)} as workspace. {self.info_str("✓")}')
 
         self.archive_path = os.path.expanduser(args.archive_path)
         if not os.path.exists(self.archive_path):
@@ -269,12 +269,13 @@ class FastEval:
                   file=sys.stderr)
             sys.exit()
 
+        self.verbosity = args.verbosity
         config_path = os.path.expanduser(args.config)
         assert os.path.isfile(config_path), "{} is not a file.".format(self.erro_str(config_path))
 
         with open(config_path, 'r') as fp:
             config = json.load(fp)
-        print('Loaded ' + self.info_str(config_path) + ' savefile.')
+        print(f'Loaded {self.info_str(config_path)} savefile. {self.info_str("✓")}')
         self.required_files = config['required_files']
 
         if len(config['reference_folder']) > 0:
@@ -284,7 +285,7 @@ class FastEval:
                   ' does not exist, exiting...'.format(self.erro_str(self.ref_path)),
                   file=sys.stderr)
                 sys.exit()
-            print('Using  {} as reference folder'.format(self.info_str(self.ref_path)))
+            print(f'Using  {self.info_str(self.ref_path)} as reference folder. {self.info_str("✓")}')
         else:
             self.ref_path = None
             print('Not using ref folder')
@@ -311,11 +312,12 @@ class FastEval:
         else:
             print('Processing {} projects...\n'.format(len(self.submissions)))
             self.check_prep()
-        #pprint.pprint(self.submissions)
+
+        self.print_step_errors('0_prep')
         self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
-        #pprint.pprint(self.submissions)
+        self.print_step_errors('1_comp')
         self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
-        #pprint.pprint(self.submissions)
+        self.print_step_errors('2_exec')
         self.write_data()
 
     def load_data(self):
@@ -328,9 +330,9 @@ class FastEval:
 
             self.pass_count = data['pass_count'] + 1
             self.submissions = data['submissions']
-            print('Loaded ' + self.info_str(data_file) + ' savefile.\n')
+            print(f'Loaded {self.info_str(data_file)} savefile. {self.info_str("✓")}\n')
         except FileNotFoundError:
-            print('Using  ' + self.info_str(data_file) + ' savefile.\n')
+            print(f'Using  {self.info_str(data_file)} savefile. {self.info_str("✓")}\n')
             self.pass_count = 0
     def write_data(self):
         data_file = os.path.join(self.workspace_path, 'data.json')
@@ -339,7 +341,7 @@ class FastEval:
                 json.dump({'pass_count': self.pass_count,
                            'submissions': self.submissions},
                           fp, sort_keys=True, indent=4, ensure_ascii=False)
-            print('Wrote  ' + self.info_str(data_file) + ' savefile.')
+            print(f'Wrote  {self.info_str(data_file)} savefile. {self.info_str("✓")}')
         except:
             print('Error while writing : \n => {}\n'.format(data_file),
                   file=sys.stderr)
@@ -390,7 +392,6 @@ class FastEval:
                 student_code = search_files(f, raw_dir)
                 # Filter files in a "__MACOS" directory
                 student_code = [s for s in student_code if '__MACOS' not in s]
-                print(student_code)
                 if len(student_code) == 1:
                     shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
                 elif len(student_code) == 0:
@@ -410,7 +411,10 @@ class FastEval:
                 self.submissions[sub]['step'] = '1_comp'
 
         to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-        print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
+        if len(to_prep) == 0:
+            print(f'           0 fails. {self.info_str("✓")}')
+        else:
+            print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
     def check_prep(self):
         to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
         print('Checking   {} projects...'.format(len(to_check)))
@@ -450,7 +454,10 @@ class FastEval:
                 self.submissions[sub]['step'] = self.next_step(step)
         os.chdir(root_dir)
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
-        print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
+        if len(to_exec) == 0:
+            print(f'           0 fails. {self.info_str("✓")}')
+        else:
+            print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
 
     def next_step(self, step):
         if step == '0_prep':
@@ -467,12 +474,20 @@ class FastEval:
         return self.wcolor + str(msg) + self.rcolor
     def info_str(self, msg):
         return self.icolor + str(msg) + self.rcolor
+    def print_step_errors(self, step):
+        to_print = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
+        if self.verbosity >= 1 and len(to_print) > 0:
+            print(f"Fail list : {to_print}\n")
+        if self.verbosity > 1:
+            for s in to_print:
+                print(f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}')
+        print("\n")
 
 
 ```
 
 
-<a id="org7bb8a17"></a>
+<a id="org90567e7"></a>
 
 ### Print Helpers
 
@@ -501,12 +516,18 @@ def info_str(self, msg):
 ```
 
 ```python
-def print_prep(self):
+def print_step_errors(self, step):
     to_print = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
+    if self.verbosity >= 1 and len(to_print) > 0:
+        print(f"Fail list : {to_print}\n")
+    if self.verbosity > 1:
+        for s in to_print:
+            print(f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}')
+    print("\n")
 ```
 
 
-<a id="org3da5629"></a>
+<a id="org0ca268d"></a>
 
 ### Json data files
 
@@ -521,9 +542,9 @@ def load_data(self):
 
         self.pass_count = data['pass_count'] + 1
         self.submissions = data['submissions']
-        print('Loaded ' + self.info_str(data_file) + ' savefile.\n')
+        print(f'Loaded {self.info_str(data_file)} savefile. {self.info_str("✓")}\n')
     except FileNotFoundError:
-        print('Using  ' + self.info_str(data_file) + ' savefile.\n')
+        print(f'Using  {self.info_str(data_file)} savefile. {self.info_str("✓")}\n')
         self.pass_count = 0
 ```
 
@@ -535,7 +556,7 @@ def write_data(self):
             json.dump({'pass_count': self.pass_count,
                        'submissions': self.submissions},
                       fp, sort_keys=True, indent=4, ensure_ascii=False)
-        print('Wrote  ' + self.info_str(data_file) + ' savefile.')
+        print(f'Wrote  {self.info_str(data_file)} savefile. {self.info_str("✓")}')
     except:
         print('Error while writing : \n => {}\n'.format(data_file),
               file=sys.stderr)
@@ -543,7 +564,7 @@ def write_data(self):
 ```
 
 
-<a id="org0bc21ea"></a>
+<a id="org0f0dc5b"></a>
 
 ### Préparation
 
@@ -603,7 +624,6 @@ def prep_step(self):
             student_code = search_files(f, raw_dir)
             # Filter files in a "__MACOS" directory
             student_code = [s for s in student_code if '__MACOS' not in s]
-            print(student_code)
             if len(student_code) == 1:
                 shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
             elif len(student_code) == 0:
@@ -623,7 +643,10 @@ def prep_step(self):
             self.submissions[sub]['step'] = '1_comp'
 
     to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-    print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
+    if len(to_prep) == 0:
+        print(f'           0 fails. {self.info_str("✓")}')
+    else:
+        print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
 ```
 
 ```python
@@ -652,7 +675,7 @@ def check_prep(self):
 ```
 
 
-<a id="org767d300"></a>
+<a id="org7d0be35"></a>
 
 ### Compilation
 
@@ -691,12 +714,15 @@ def exte_step(self, cmd, step='1_comp', label='Compiling'):
             self.submissions[sub]['step'] = self.next_step(step)
     os.chdir(root_dir)
     to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
-    print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
+    if len(to_exec) == 0:
+        print(f'           0 fails. {self.info_str("✓")}')
+    else:
+        print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
 
 ```
 
 
-<a id="orga1ed9dc"></a>
+<a id="org9ff321b"></a>
 
 # Déploiement vers Pypi
 
@@ -710,7 +736,7 @@ twine upload dist/*
 ```
 
 
-<a id="org18b3dd1"></a>
+<a id="orge895569"></a>
 
 # Github Pages
 

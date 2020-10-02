@@ -99,7 +99,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.4',
+    version='0.2.5',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -145,20 +145,21 @@ tree .
 ** Cli
 
 #+begin_src python :tangle fast_eval/__main__.py
-  #!/usr/bin/env python3
-  import argparse
-  from fast_eval.util import FastEval
-  def main():
-      parser = argparse.ArgumentParser()
-      parser.add_argument("config",
-                          help="path of json config file")
-      parser.add_argument("archive_path",
-                          help="path of archive from arche")
-      parser.add_argument("--ws",
-                          help="where to build workspace")
-      parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                          action="store_true")
-      fe = FastEval(parser.parse_args())
+    #!/usr/bin/env python3
+    import argparse
+    from fast_eval.util import FastEval
+    def main():
+        parser = argparse.ArgumentParser()
+        parser.add_argument("config",
+                            help="path of json config file")
+        parser.add_argument("archive_path",
+                            help="path of archive from arche")
+        parser.add_argument("--ws",
+                            help="where to build workspace")
+        parser.add_argument("-v", "--verbosity",
+                            help="increase output verbosity",
+                            type=int, choices=[0, 1, 2], default=0)
+        fe = FastEval(parser.parse_args())
 #+end_src
 
 #+RESULTS:
@@ -206,13 +207,11 @@ tree .
           #self.icolor = bg('deep_sky_blue_2') + fg('white')
           self.icolor = fg('deep_sky_blue_2')
           self.rcolor = attr('reset')
-
           if args.ws:
               self.workspace_path = os.path.abspath(os.path.expanduser(args.ws))
-              #self.workspace_path = os.path.expanduser(args.ws)
           else:
               self.workspace_path = os.path.join(os.getcwd(), 'submissions')
-          print(f'Using  {self.info_str(self.workspace_path)} as workspace.')
+          print(f'Using  {self.info_str(self.workspace_path)} as workspace. {self.info_str("✓")}')
 
           self.archive_path = os.path.expanduser(args.archive_path)
           if not os.path.exists(self.archive_path):
@@ -221,12 +220,13 @@ tree .
                     file=sys.stderr)
               sys.exit()
 
+          self.verbosity = args.verbosity
           config_path = os.path.expanduser(args.config)
           assert os.path.isfile(config_path), "{} is not a file.".format(self.erro_str(config_path))
 
           with open(config_path, 'r') as fp:
               config = json.load(fp)
-          print('Loaded ' + self.info_str(config_path) + ' savefile.')
+          print(f'Loaded {self.info_str(config_path)} savefile. {self.info_str("✓")}')
           self.required_files = config['required_files']
 
           if len(config['reference_folder']) > 0:
@@ -236,7 +236,7 @@ tree .
                     ' does not exist, exiting...'.format(self.erro_str(self.ref_path)),
                     file=sys.stderr)
                   sys.exit()
-              print('Using  {} as reference folder'.format(self.info_str(self.ref_path)))
+              print(f'Using  {self.info_str(self.ref_path)} as reference folder. {self.info_str("✓")}')
           else:
               self.ref_path = None
               print('Not using ref folder')
@@ -263,11 +263,12 @@ tree .
           else:
               print('Processing {} projects...\n'.format(len(self.submissions)))
               self.check_prep()
-          #pprint.pprint(self.submissions)
+
+          self.print_step_errors('0_prep')
           self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
-          #pprint.pprint(self.submissions)
+          self.print_step_errors('1_comp')
           self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
-          #pprint.pprint(self.submissions)
+          self.print_step_errors('2_exec')
           self.write_data()
 
       <<load_data>>
@@ -282,6 +283,7 @@ tree .
       <<erro_str>>
       <<warn_str>>
       <<info_str>>
+      <<print_step_errors>>
 
 
 #+end_src
@@ -315,10 +317,16 @@ tree .
       return self.icolor + str(msg) + self.rcolor
 #+end_src
 
-#+name: print_prep
+#+name: print_step_errors
 #+begin_src python
-  def print_prep(self):
+  def print_step_errors(self, step):
       to_print = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
+      if self.verbosity >= 1 and len(to_print) > 0:
+          print(f"Fail list : {to_print}\n")
+      if self.verbosity > 1:
+          for s in to_print:
+              print(f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}')
+      print("\n")
 #+end_src
 
 
@@ -335,9 +343,9 @@ tree .
 
           self.pass_count = data['pass_count'] + 1
           self.submissions = data['submissions']
-          print('Loaded ' + self.info_str(data_file) + ' savefile.\n')
+          print(f'Loaded {self.info_str(data_file)} savefile. {self.info_str("✓")}\n')
       except FileNotFoundError:
-          print('Using  ' + self.info_str(data_file) + ' savefile.\n')
+          print(f'Using  {self.info_str(data_file)} savefile. {self.info_str("✓")}\n')
           self.pass_count = 0
 #+end_src
 
@@ -350,7 +358,7 @@ tree .
                 json.dump({'pass_count': self.pass_count,
                            'submissions': self.submissions},
                           fp, sort_keys=True, indent=4, ensure_ascii=False)
-            print('Wrote  ' + self.info_str(data_file) + ' savefile.')
+            print(f'Wrote  {self.info_str(data_file)} savefile. {self.info_str("✓")}')
         except:
             print('Error while writing : \n => {}\n'.format(data_file),
                   file=sys.stderr)
@@ -417,7 +425,6 @@ tree .
               student_code = search_files(f, raw_dir)
               # Filter files in a "__MACOS" directory
               student_code = [s for s in student_code if '__MACOS' not in s]
-              print(student_code)
               if len(student_code) == 1:
                   shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
               elif len(student_code) == 0:
@@ -437,7 +444,10 @@ tree .
               self.submissions[sub]['step'] = '1_comp'
 
       to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-      print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
+      if len(to_prep) == 0:
+          print(f'           0 fails. {self.info_str("✓")}')
+      else:
+          print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
 #+end_src
 #+name: search_files
 #+begin_src python
@@ -504,7 +514,10 @@ tree .
               self.submissions[sub]['step'] = self.next_step(step)
       os.chdir(root_dir)
       to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
-      print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
+      if len(to_exec) == 0:
+          print(f'           0 fails. {self.info_str("✓")}')
+      else:
+          print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
 
 #+end_src
 
@@ -527,24 +540,24 @@ writing top-level names to fast_eval.egg-info/top_level.txt
 reading manifest file 'fast_eval.egg-info/SOURCES.txt'
 writing manifest file 'fast_eval.egg-info/SOURCES.txt'
 running check
-creating fast-eval-0.2.4
-creating fast-eval-0.2.4/fast_eval
-creating fast-eval-0.2.4/fast_eval.egg-info
-copying files to fast-eval-0.2.4...
-copying setup.py -> fast-eval-0.2.4
-copying fast_eval/__init__.py -> fast-eval-0.2.4/fast_eval
-copying fast_eval/__main__.py -> fast-eval-0.2.4/fast_eval
-copying fast_eval/util.py -> fast-eval-0.2.4/fast_eval
-copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.4/fast_eval.egg-info
-copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.4/fast_eval.egg-info
-copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.4/fast_eval.egg-info
-copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.4/fast_eval.egg-info
-copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.4/fast_eval.egg-info
-copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.4/fast_eval.egg-info
-Writing fast-eval-0.2.4/setup.cfg
+creating fast-eval-0.2.5
+creating fast-eval-0.2.5/fast_eval
+creating fast-eval-0.2.5/fast_eval.egg-info
+copying files to fast-eval-0.2.5...
+copying setup.py -> fast-eval-0.2.5
+copying fast_eval/__init__.py -> fast-eval-0.2.5/fast_eval
+copying fast_eval/__main__.py -> fast-eval-0.2.5/fast_eval
+copying fast_eval/util.py -> fast-eval-0.2.5/fast_eval
+copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.5/fast_eval.egg-info
+copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.5/fast_eval.egg-info
+copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.5/fast_eval.egg-info
+copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.5/fast_eval.egg-info
+copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.5/fast_eval.egg-info
+copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.5/fast_eval.egg-info
+Writing fast-eval-0.2.5/setup.cfg
 creating dist
 Creating tar archive
-removing 'fast-eval-0.2.4' (and everything under it)
+removing 'fast-eval-0.2.5' (and everything under it)
 #+end_example
 
 #+BEGIN_SRC bash

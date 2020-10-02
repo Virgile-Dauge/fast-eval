@@ -9,4 +9,7 @@ def main():
                         help="path of archive from arche")
     parser.add_argument("--ws",
                         help="where to build workspace")
+    parser.add_argument("-v", "--verbosity",
+                        help="increase output verbosity",
+                        type=int, choices=[0, 1, 2], default=0)
     fe = FastEval(parser.parse_args())
