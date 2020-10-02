@@ -17,6 +17,9 @@ Champs à adapter :
 
 - comp_commands :: Liste de commandes à effectuer lors de l'étape de
   compilation. Liste vide si rien à faire.
+
+- execution_commands :: Liste de commandes à effectuer lors de l'étape
+  d'exécution/évaluation. Liste vide si rien à faire.
 #+BEGIN_SRC json :tangle example/config.json
   {
     "required_files": [
@@ -85,7 +88,6 @@ nécessaire lors de l'évaluation de TPs/projets.
 * Implémentation
 
 ** Package declaration
-
 *** Fichier de setup
 #+begin_src python :tangle setup.py
 # -*- coding: utf-
@@ -94,7 +96,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.1',
+    version='0.2.3',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -151,8 +153,9 @@ tree .
                           help="path of archive from arche")
       parser.add_argument("--ws",
                           help="where to build workspace")
+      parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                          action="store_true")
       fe = FastEval(parser.parse_args())
-
 #+end_src
 
 #+RESULTS:
@@ -202,7 +205,8 @@ tree .
           self.rcolor = attr('reset')
 
           if args.ws:
-              self.workspace_path = os.path.expanduser(args.ws)
+              self.workspace_path = os.path.abspath(os.path.expanduser(args.ws))
+              #self.workspace_path = os.path.expanduser(args.ws)
           else:
               self.workspace_path = os.path.join(os.getcwd(), 'submissions')
           print('Using  {} as workspace'.format(self.info_str(self.workspace_path)))
@@ -255,9 +259,12 @@ tree .
               self.prep_step()
           else:
               print('Processing {} projects...\n'.format(len(self.submissions)))
-          self.check_prep()
+              self.check_prep()
+          #pprint.pprint(self.submissions)
           self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
+          #pprint.pprint(self.submissions)
           self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+          #pprint.pprint(self.submissions)
           self.write_data()
 
       <<load_data>>
@@ -304,6 +311,13 @@ tree .
   def info_str(self, msg):
       return self.icolor + str(msg) + self.rcolor
 #+end_src
+
+#+name: print_prep
+#+begin_src python
+  def print_prep(self):
+      to_print = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
+#+end_src
+
 
 *** Json data files
 #+name: load_data
@@ -478,23 +492,26 @@ tree .
       root_dir = os.getcwd()
       for sub in to_exec:
           os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
+          comp_ok = True
           for c in cmd:
               completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
-              if completed_process.returncode == 0:
-                  self.submissions[sub]['step'] = self.next_step(step)
-                  cond = [len(completed_process.stderr) > 0, len(completed_process.stdout) > 0]
-                  if any(cond):
-                      self.submissions[sub]['steps'][step][c] = {}
-                  if cond[0]:
-                      self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
-                  if cond[1]:
-                      self.submissions[sub]['steps'][step][c]['stdout'] = completed_process.stdout.split('\n')
-
+              if completed_process.returncode == 1:
+                  comp_ok=False
+              cond = [len(completed_process.stderr) > 0, len(completed_process.stdout) > 0]
+              if any(cond) and c not in self.submissions[sub]['steps'][step]:
+                  self.submissions[sub]['steps'][step][c] = {}
+              if cond[0]:
+                  self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
+              if cond[1]:
+                  self.submissions[sub]['steps'][step][c]['stdout'] = completed_process.stdout.split('\n')
+          if comp_ok:
+              self.submissions[sub]['step'] = self.next_step(step)
       os.chdir(root_dir)
       to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
       print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
 
 #+end_src
+
 * Déploiement vers Pypi
 
 #+BEGIN_SRC bash :results output
@@ -514,24 +531,24 @@ writing top-level names to fast_eval.egg-info/top_level.txt
 reading manifest file 'fast_eval.egg-info/SOURCES.txt'
 writing manifest file 'fast_eval.egg-info/SOURCES.txt'
 running check
-creating fast-eval-0.2.1
-creating fast-eval-0.2.1/fast_eval
-creating fast-eval-0.2.1/fast_eval.egg-info
-copying files to fast-eval-0.2.1...
-copying setup.py -> fast-eval-0.2.1
-copying fast_eval/__init__.py -> fast-eval-0.2.1/fast_eval
-copying fast_eval/__main__.py -> fast-eval-0.2.1/fast_eval
-copying fast_eval/util.py -> fast-eval-0.2.1/fast_eval
-copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.1/fast_eval.egg-info
-copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.1/fast_eval.egg-info
-copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.1/fast_eval.egg-info
-copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.1/fast_eval.egg-info
-copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.1/fast_eval.egg-info
-copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.1/fast_eval.egg-info
-Writing fast-eval-0.2.1/setup.cfg
+creating fast-eval-0.2.3
+creating fast-eval-0.2.3/fast_eval
+creating fast-eval-0.2.3/fast_eval.egg-info
+copying files to fast-eval-0.2.3...
+copying setup.py -> fast-eval-0.2.3
+copying fast_eval/__init__.py -> fast-eval-0.2.3/fast_eval
+copying fast_eval/__main__.py -> fast-eval-0.2.3/fast_eval
+copying fast_eval/util.py -> fast-eval-0.2.3/fast_eval
+copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.3/fast_eval.egg-info
+copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.3/fast_eval.egg-info
+copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.3/fast_eval.egg-info
+copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.3/fast_eval.egg-info
+copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.3/fast_eval.egg-info
+copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.3/fast_eval.egg-info
+Writing fast-eval-0.2.3/setup.cfg
 creating dist
 Creating tar archive
-removing 'fast-eval-0.2.1' (and everything under it)
+removing 'fast-eval-0.2.3' (and everything under it)
 #+end_example
 
 #+BEGIN_SRC bash

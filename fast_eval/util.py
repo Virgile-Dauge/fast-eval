@@ -49,7 +49,8 @@ class FastEval:
         self.rcolor = attr('reset')
 
         if args.ws:
-            self.workspace_path = os.path.expanduser(args.ws)
+            self.workspace_path = os.path.abspath(os.path.expanduser(args.ws))
+            #self.workspace_path = os.path.expanduser(args.ws)
         else:
             self.workspace_path = os.path.join(os.getcwd(), 'submissions')
         print('Using  {} as workspace'.format(self.info_str(self.workspace_path)))
@@ -102,9 +103,12 @@ class FastEval:
             self.prep_step()
         else:
             print('Processing {} projects...\n'.format(len(self.submissions)))
-        self.check_prep()
+            self.check_prep()
+        #pprint.pprint(self.submissions)
         self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
+        #pprint.pprint(self.submissions)
         self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+        #pprint.pprint(self.submissions)
         self.write_data()
 
     def load_data(self):
@@ -222,18 +226,20 @@ class FastEval:
         root_dir = os.getcwd()
         for sub in to_exec:
             os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
+            comp_ok = True
             for c in cmd:
                 completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
-                if completed_process.returncode == 0:
-                    self.submissions[sub]['step'] = self.next_step(step)
-                    cond = [len(completed_process.stderr) > 0, len(completed_process.stdout) > 0]
-                    if any(cond):
-                        self.submissions[sub]['steps'][step][c] = {}
-                    if cond[0]:
-                        self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
-                    if cond[1]:
-                        self.submissions[sub]['steps'][step][c]['stdout'] = completed_process.stdout.split('\n')
-    
+                if completed_process.returncode == 1:
+                    comp_ok=False
+                cond = [len(completed_process.stderr) > 0, len(completed_process.stdout) > 0]
+                if any(cond) and c not in self.submissions[sub]['steps'][step]:
+                    self.submissions[sub]['steps'][step][c] = {}
+                if cond[0]:
+                    self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
+                if cond[1]:
+                    self.submissions[sub]['steps'][step][c]['stdout'] = completed_process.stdout.split('\n')
+            if comp_ok:
+                self.submissions[sub]['step'] = self.next_step(step)
         os.chdir(root_dir)
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
         print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
