@@ -20,19 +20,22 @@ Champs à adapter :
 
 - execution_commands :: Liste de commandes à effectuer lors de l'étape
   d'exécution/évaluation. Liste vide si rien à faire.
-#+BEGIN_SRC json :tangle example/config.json
-  {
+#+BEGIN_SRC json :tangle example/fake.json
+{
     "required_files": [
-      "exo1.c"
+        "hello.c",
+        "nohello.c"
     ],
     "reference_folder": "~/coucou_ref",
     "compilation_commands": [
-      "gcc exo1.c -o exo1 -Wall"
+        "gcc hello.c -o hello -Wall",
+        "gcc nohello.c -o nohello -Wall"
     ],
     "execution_commands": [
-      "./exo1"
+        "./hello",
+ 	"./nohello"
     ]
-  }
+}
 #+END_SRC
 
 ** Usage
