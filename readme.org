@@ -56,7 +56,6 @@ Champs à adapter :
 :   --ws WS       where to build workspace
 
 * Concept
-
 ** Pourquoi ?
 L'objectif de ce projet est de faciliter l'évaluation de TPs d'info.
 Généralement la procédure d'évaluation est la même :
@@ -89,7 +88,6 @@ de faire une grosse partie du travail fastidieux et répétitif
 nécessaire lors de l'évaluation de TPs/projets.
 
 * Implémentation
-
 ** Package declaration
 *** Fichier de setup
 #+begin_src python :tangle setup.py
@@ -99,7 +97,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.5',
+    version='0.2.7',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -172,6 +170,7 @@ tree .
   import sys
   import csv
   import json
+  import shlex
   # Pour affichage de dict
   import pprint
   # Pour décomprésser
@@ -242,8 +241,18 @@ tree .
               self.ref_path = None
               print('Not using ref folder')
 
-          self.comp_cmd = config['compilation_commands']
-          self.exec_cmd = config['execution_commands']
+          if 'compilation_commands' in config:
+              self.comp_cmd = config['compilation_commands']
+          else:
+              self.comp_cmd = []
+          if 'execution_commands' in config:
+              self.exec_cmd = config['execution_commands']
+          else:
+              self.exec_cmd = []
+          if 'cleanup' in config:
+              self.cleanup_cmd = config['cleanup']
+          else:
+              self.cleanup_cmd = []
 
           self.submissions = {}
           # Chargement de la config
@@ -266,11 +275,14 @@ tree .
               self.check_prep()
 
           self.print_step_errors('0_prep')
+          self.write_data()
           self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
           self.print_step_errors('1_comp')
+          self.write_data()
           self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
           self.print_step_errors('2_exec')
           self.write_data()
+          self.cleanup()
 
       <<load_data>>
       <<write_data>>
@@ -280,6 +292,7 @@ tree .
       <<prep_step>>
       <<check_prep>>
       <<exte_step>>
+      <<cleanup>>
       <<next_step>>
       <<erro_str>>
       <<warn_str>>
@@ -493,24 +506,34 @@ tree .
 
 #+name: exte_step
 #+begin_src python
-  def exte_step(self, cmd, step='1_comp', label='Compiling'):
+  def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
       to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
       print('{}  {} projects...'.format(label, len(to_exec)))
       root_dir = os.getcwd()
       for sub in to_exec:
           os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
           comp_ok = True
+          timeout_raised = False
           for c in cmd:
-              completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
-              if completed_process.returncode == 1:
+              try:
+                  completed_process = subprocess.run([c], capture_output=True, text=True, shell=True, timeout=timeout)
+                  if completed_process.returncode == 1:
+                      comp_ok=False
+                  cond = [len(completed_process.stderr) > 0, len(completed_process.stdout)]
+                  if any(cond) and c not in self.submissions[sub]['steps'][step]:
+                      self.submissions[sub]['steps'][step][c] = {}
+                  if cond[0]:
+                      self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
+                  if cond[1]:
+                      out = completed_process.stdout.split('\n')
+                      if len(out) > 20:
+                          out = out[:10] + ['.'] + ['truncated by fast-eval'] + ['.'] + out[-10:]
+                      self.submissions[sub]['steps'][step][c]['stdout'] = out
+              except Exception as e:
                   comp_ok=False
-              cond = [len(completed_process.stderr) > 0, len(completed_process.stdout) > 0]
-              if any(cond) and c not in self.submissions[sub]['steps'][step]:
-                  self.submissions[sub]['steps'][step][c] = {}
-              if cond[0]:
-                  self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
-              if cond[1]:
-                  self.submissions[sub]['steps'][step][c]['stdout'] = completed_process.stdout.split('\n')
+                  if type(e) is subprocess.TimeoutExpired:
+                      self.submissions[sub]['steps'][step][c] = 'timeout'
+
           if comp_ok:
               self.submissions[sub]['step'] = self.next_step(step)
       os.chdir(root_dir)
@@ -521,6 +544,20 @@ tree .
           print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
 
 #+end_src
+
+*** Cleanup
+
+#+name: cleanup
+#+begin_src python
+  def cleanup(self):
+      for c in self.cleanup_cmd:
+          completed_process = subprocess.run(shlex.split(c))
+          if completed_process.returncode == 0:
+              print(f'Cleanup : {c} {self.info_str("✓")}')
+          else:
+              print(f'Cleanup : {c} {self.erro_str("❌")}')
+#+end_src
+*** Export vers org-mode
 
 * Déploiement vers Pypi
 
@@ -541,24 +578,24 @@ writing top-level names to fast_eval.egg-info/top_level.txt
 reading manifest file 'fast_eval.egg-info/SOURCES.txt'
 writing manifest file 'fast_eval.egg-info/SOURCES.txt'
 running check
-creating fast-eval-0.2.5
-creating fast-eval-0.2.5/fast_eval
-creating fast-eval-0.2.5/fast_eval.egg-info
-copying files to fast-eval-0.2.5...
-copying setup.py -> fast-eval-0.2.5
-copying fast_eval/__init__.py -> fast-eval-0.2.5/fast_eval
-copying fast_eval/__main__.py -> fast-eval-0.2.5/fast_eval
-copying fast_eval/util.py -> fast-eval-0.2.5/fast_eval
-copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.5/fast_eval.egg-info
-copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.5/fast_eval.egg-info
-copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.5/fast_eval.egg-info
-copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.5/fast_eval.egg-info
-copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.5/fast_eval.egg-info
-copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.5/fast_eval.egg-info
-Writing fast-eval-0.2.5/setup.cfg
+creating fast-eval-0.2.7
+creating fast-eval-0.2.7/fast_eval
+creating fast-eval-0.2.7/fast_eval.egg-info
+copying files to fast-eval-0.2.7...
+copying setup.py -> fast-eval-0.2.7
+copying fast_eval/__init__.py -> fast-eval-0.2.7/fast_eval
+copying fast_eval/__main__.py -> fast-eval-0.2.7/fast_eval
+copying fast_eval/util.py -> fast-eval-0.2.7/fast_eval
+copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.7/fast_eval.egg-info
+copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.7/fast_eval.egg-info
+copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.7/fast_eval.egg-info
+copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.7/fast_eval.egg-info
+copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.7/fast_eval.egg-info
+copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.7/fast_eval.egg-info
+Writing fast-eval-0.2.7/setup.cfg
 creating dist
 Creating tar archive
-removing 'fast-eval-0.2.5' (and everything under it)
+removing 'fast-eval-0.2.7' (and everything under it)
 #+end_example
 
 #+BEGIN_SRC bash

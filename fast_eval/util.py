@@ -3,6 +3,7 @@ import os
 import sys
 import csv
 import json
+import shlex
 # Pour affichage de dict
 import pprint
 # Pour décomprésser
@@ -74,8 +75,18 @@ class FastEval:
             self.ref_path = None
             print('Not using ref folder')
 
-        self.comp_cmd = config['compilation_commands']
-        self.exec_cmd = config['execution_commands']
+        if 'compilation_commands' in config:
+            self.comp_cmd = config['compilation_commands']
+        else:
+            self.comp_cmd = []
+        if 'execution_commands' in config:
+            self.exec_cmd = config['execution_commands']
+        else:
+            self.exec_cmd = []
+        if 'cleanup' in config:
+            self.cleanup_cmd = config['cleanup']
+        else:
+            self.cleanup_cmd = []
 
         self.submissions = {}
         # Chargement de la config
@@ -98,11 +109,14 @@ class FastEval:
             self.check_prep()
 
         self.print_step_errors('0_prep')
+        self.write_data()
         self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
         self.print_step_errors('1_comp')
+        self.write_data()
         self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
         self.print_step_errors('2_exec')
         self.write_data()
+        self.cleanup()
 
     def load_data(self):
         data_file = os.path.join(self.workspace_path, 'data.json')
@@ -216,24 +230,34 @@ class FastEval:
     
         to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
         print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
-    def exte_step(self, cmd, step='1_comp', label='Compiling'):
+    def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
         print('{}  {} projects...'.format(label, len(to_exec)))
         root_dir = os.getcwd()
         for sub in to_exec:
             os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
             comp_ok = True
+            timeout_raised = False
             for c in cmd:
-                completed_process = subprocess.run([c], capture_output=True, text=True, shell=True)
-                if completed_process.returncode == 1:
+                try:
+                    completed_process = subprocess.run([c], capture_output=True, text=True, shell=True, timeout=timeout)
+                    if completed_process.returncode == 1:
+                        comp_ok=False
+                    cond = [len(completed_process.stderr) > 0, len(completed_process.stdout)]
+                    if any(cond) and c not in self.submissions[sub]['steps'][step]:
+                        self.submissions[sub]['steps'][step][c] = {}
+                    if cond[0]:
+                        self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
+                    if cond[1]:
+                        out = completed_process.stdout.split('\n')
+                        if len(out) > 20:
+                            out = out[:10] + ['.'] + ['truncated by fast-eval'] + ['.'] + out[-10:]
+                        self.submissions[sub]['steps'][step][c]['stdout'] = out
+                except Exception as e:
                     comp_ok=False
-                cond = [len(completed_process.stderr) > 0, len(completed_process.stdout) > 0]
-                if any(cond) and c not in self.submissions[sub]['steps'][step]:
-                    self.submissions[sub]['steps'][step][c] = {}
-                if cond[0]:
-                    self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
-                if cond[1]:
-                    self.submissions[sub]['steps'][step][c]['stdout'] = completed_process.stdout.split('\n')
+                    if type(e) is subprocess.TimeoutExpired:
+                        self.submissions[sub]['steps'][step][c] = 'timeout'
+    
             if comp_ok:
                 self.submissions[sub]['step'] = self.next_step(step)
         os.chdir(root_dir)
@@ -243,6 +267,13 @@ class FastEval:
         else:
             print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
     
+    def cleanup(self):
+        for c in self.cleanup_cmd:
+            completed_process = subprocess.run(shlex.split(c))
+            if completed_process.returncode == 0:
+                print(f'Cleanup : {c} {self.info_str("✓")}')
+            else:
+                print(f'Cleanup : {c} {self.erro_str("❌")}')
     def next_step(self, step):
         if step == '0_prep':
             return '1_comp'
