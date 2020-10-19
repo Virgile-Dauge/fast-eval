@@ -4,6 +4,19 @@
 #+BEGIN_SRC bash
  pip install fast-eval
 #+END_SRC
+*** Optionnal requirements
+
+**** For HTML export
+Install pandoc
+
+#+BEGIN_SRC bash
+  sudo apt install pandoc
+#+END_SRC
+
+Install pandoc theme
+#+BEGIN_SRC bash
+  curl 'https://raw.githubusercontent.com/ryangrose/easy-pandoc-templates/master/copy_templates.sh' | bash
+#+END_SRC
 
 ** Fichier de configuration
 Champs à adapter :
@@ -97,7 +110,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.7',
+    version='0.2.9',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -253,6 +266,10 @@ tree .
               self.cleanup_cmd = config['cleanup']
           else:
               self.cleanup_cmd = []
+          if 'export_to_html' in config:
+              self.export_to_html = config['export_to_html']
+          else:
+              self.export_to_html = True
 
           self.submissions = {}
           # Chargement de la config
@@ -294,6 +311,7 @@ tree .
       <<exte_step>>
       <<cleanup>>
       <<export>>
+      <<gen_html>>
       <<next_step>>
       <<erro_str>>
       <<warn_str>>
@@ -517,7 +535,7 @@ tree .
           for c in cmd:
               try:
                   completed_process = subprocess.run([c], capture_output=True, text=True, shell=True, timeout=timeout)
-                  if completed_process.returncode == 1:
+                  if completed_process.returncode != 0:
                       comp_ok=False
                   cond = [len(completed_process.stderr) > 0, len(completed_process.stdout)]
                   if any(cond) and c not in self.submissions[sub]['steps'][step]:
@@ -631,8 +649,25 @@ tree .
                             f.write(f'{line}\n')
                         f.write('#+end_example\n')
 
+      if self.export_to_html:
+          self.gen_html()
 #+end_src
-* Déploiement vers Pypi
+*** org vers html
+#+name: gen_html
+#+begin_src python
+  def gen_html(self, orgfile='readme.org', style='tango'):
+      inpath = os.path.join(self.workspace_path, 'readme.org')
+      outpath = os.path.join(self.workspace_path, 'readme.html')
+      cmd = shlex.split(f'pandoc -s {inpath} -o {outpath} --highlight-style {style} --template=easy_template.html --standalone --toc')
+      completed_process = subprocess.run(cmd)
+      if completed_process.returncode == 0:
+          print(f'Wrote  {self.info_str(outpath)} readable file. {self.info_str("✓")}')
+      else:
+         print('Error while generating html')
+
+#+end_src
+* Déploiement
+** Vers Pypi
 
 #+BEGIN_SRC bash :results output
 rm -rf dist/
@@ -651,24 +686,24 @@ writing top-level names to fast_eval.egg-info/top_level.txt
 reading manifest file 'fast_eval.egg-info/SOURCES.txt'
 writing manifest file 'fast_eval.egg-info/SOURCES.txt'
 running check
-creating fast-eval-0.2.7
-creating fast-eval-0.2.7/fast_eval
-creating fast-eval-0.2.7/fast_eval.egg-info
-copying files to fast-eval-0.2.7...
-copying setup.py -> fast-eval-0.2.7
-copying fast_eval/__init__.py -> fast-eval-0.2.7/fast_eval
-copying fast_eval/__main__.py -> fast-eval-0.2.7/fast_eval
-copying fast_eval/util.py -> fast-eval-0.2.7/fast_eval
-copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.7/fast_eval.egg-info
-copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.7/fast_eval.egg-info
-copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.7/fast_eval.egg-info
-copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.7/fast_eval.egg-info
-copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.7/fast_eval.egg-info
-copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.7/fast_eval.egg-info
-Writing fast-eval-0.2.7/setup.cfg
+creating fast-eval-0.2.9
+creating fast-eval-0.2.9/fast_eval
+creating fast-eval-0.2.9/fast_eval.egg-info
+copying files to fast-eval-0.2.9...
+copying setup.py -> fast-eval-0.2.9
+copying fast_eval/__init__.py -> fast-eval-0.2.9/fast_eval
+copying fast_eval/__main__.py -> fast-eval-0.2.9/fast_eval
+copying fast_eval/util.py -> fast-eval-0.2.9/fast_eval
+copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.9/fast_eval.egg-info
+copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.9/fast_eval.egg-info
+copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.9/fast_eval.egg-info
+copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.9/fast_eval.egg-info
+copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.9/fast_eval.egg-info
+copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.9/fast_eval.egg-info
+Writing fast-eval-0.2.9/setup.cfg
 creating dist
 Creating tar archive
-removing 'fast-eval-0.2.7' (and everything under it)
+removing 'fast-eval-0.2.9' (and everything under it)
 #+end_example
 
 #+BEGIN_SRC bash
@@ -676,7 +711,7 @@ removing 'fast-eval-0.2.7' (and everything under it)
 #+END_SRC
 
 #+RESULTS:
-* Github Pages
+** Github Pages
 
 #+BEGIN_SRC bash
 mkdir docs

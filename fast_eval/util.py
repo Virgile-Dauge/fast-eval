@@ -87,6 +87,10 @@ class FastEval:
             self.cleanup_cmd = config['cleanup']
         else:
             self.cleanup_cmd = []
+        if 'export_to_html' in config:
+            self.export_to_html = config['export_to_html']
+        else:
+            self.export_to_html = True
 
         self.submissions = {}
         # Chargement de la config
@@ -241,7 +245,7 @@ class FastEval:
             for c in cmd:
                 try:
                     completed_process = subprocess.run([c], capture_output=True, text=True, shell=True, timeout=timeout)
-                    if completed_process.returncode == 1:
+                    if completed_process.returncode != 0:
                         comp_ok=False
                     cond = [len(completed_process.stderr) > 0, len(completed_process.stdout)]
                     if any(cond) and c not in self.submissions[sub]['steps'][step]:
@@ -343,6 +347,18 @@ class FastEval:
                           for line in v['stdout']:
                               f.write(f'{line}\n')
                           f.write('#+end_example\n')
+    
+        if self.export_to_html:
+            self.gen_html()
+    def gen_html(self, orgfile='readme.org', style='tango'):
+        inpath = os.path.join(self.workspace_path, 'readme.org')
+        outpath = os.path.join(self.workspace_path, 'readme.html')
+        cmd = shlex.split(f'pandoc -s {inpath} -o {outpath} --highlight-style {style} --template=easy_template.html --standalone --toc')
+        completed_process = subprocess.run(cmd)
+        if completed_process.returncode == 0:
+            print(f'Wrote  {self.info_str(outpath)} readable file. {self.info_str("✓")}')
+        else:
+           print('Error while generating html')
     
     def next_step(self, step):
         if step == '0_prep':

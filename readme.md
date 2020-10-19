@@ -1,32 +1,36 @@
-- [Mode d'emploi](#orgbb1177f)
-  - [Installation](#org88ff857)
-  - [Fichier de configuration](#orgdad2ad3)
-  - [Usage](#org798607f)
-- [Concept](#orgb86bbb4)
-  - [Pourquoi ?](#org2243f79)
-  - [Comment ?](#org083c8d7)
-- [Implémentation](#orgad126c7)
-  - [Package declaration](#org4c5f724)
-    - [Fichier de setup](#org3a6fe89)
-  - [Cli](#org2dc5049)
-  - [Dépendances](#org1dac84d)
-  - [Class](#orgb259a0c)
-    - [Init](#org4f9b2c8)
-    - [Print Helpers](#orgc761a02)
-    - [Json data files](#orgfc4c494)
-    - [Préparation](#orgd603c58)
-    - [Compilation](#orgffb3aa8)
-    - [Cleanup](#org97d55f2)
-- [Déploiement vers Pypi](#org875bf53)
-- [Github Pages](#org2917a85)
+- [Mode d'emploi](#orgca74fe2)
+  - [Installation](#orgedf9cbe)
+    - [Optionnal requirements](#org19dace0)
+  - [Fichier de configuration](#org778f775)
+  - [Usage](#org146402f)
+- [Concept](#org42860e4)
+  - [Pourquoi ?](#orga706311)
+  - [Comment ?](#orga77cf18)
+- [Implémentation](#org35fb6f8)
+  - [Package declaration](#org69eb513)
+    - [Fichier de setup](#org34506d6)
+  - [Cli](#org380a472)
+  - [Dépendances](#orgd7795da)
+  - [Class](#orgd206296)
+    - [Init](#orgea4609f)
+    - [Print Helpers](#org012263c)
+    - [Json data files](#orge154ce8)
+    - [Préparation](#org9a7e203)
+    - [Compilation](#orgcb76d4a)
+    - [Cleanup](#orgdac39c5)
+    - [Export vers org-mode](#org0ea5b45)
+    - [org vers html](#org96ad9e0)
+- [Déploiement](#org69be47c)
+  - [Vers Pypi](#orgbe3b8e3)
+  - [Github Pages](#org8e8413b)
 
 
-<a id="orgbb1177f"></a>
+<a id="orgca74fe2"></a>
 
 # TODO Mode d'emploi
 
 
-<a id="org88ff857"></a>
+<a id="orgedf9cbe"></a>
 
 ## Installation
 
@@ -35,7 +39,26 @@ pip install fast-eval
 ```
 
 
-<a id="orgdad2ad3"></a>
+<a id="org19dace0"></a>
+
+### Optionnal requirements
+
+1.  For HTML export
+
+    Install pandoc
+
+    ```bash
+    sudo apt install pandoc
+    ```
+
+    Install pandoc theme
+
+    ```bash
+    curl 'https://raw.githubusercontent.com/ryangrose/easy-pandoc-templates/master/copy_templates.sh' | bash
+    ```
+
+
+<a id="org778f775"></a>
 
 ## Fichier de configuration
 
@@ -68,7 +91,7 @@ Champs à adapter :
 ```
 
 
-<a id="org798607f"></a>
+<a id="org146402f"></a>
 
 ## Usage
 
@@ -90,12 +113,12 @@ fast-eval -h
                             increase output verbosity
 
 
-<a id="orgb86bbb4"></a>
+<a id="org42860e4"></a>
 
 # Concept
 
 
-<a id="org2243f79"></a>
+<a id="orga706311"></a>
 
 ## Pourquoi ?
 
@@ -110,7 +133,7 @@ L'objectif de ce projet est de faciliter l'évaluation de TPs d'info. Générale
 -   **Exécution et évaluation:** Faire tourner le programme et voir ce que cela donne. Une partie plus ou moins couvrante peut être déléguée à des logiciels de tests, permettant d'avoir rapidement une idée de la pertinence de la solution soumise.
 
 
-<a id="org083c8d7"></a>
+<a id="orga77cf18"></a>
 
 ## Comment ?
 
@@ -119,17 +142,17 @@ Automatisation de la préparation, compilation et pourquoi pas d'une partie de l
 Cette automatisation ce concrétise par un programme python permettant de faire une grosse partie du travail fastidieux et répétitif nécessaire lors de l'évaluation de TPs/projets.
 
 
-<a id="orgad126c7"></a>
+<a id="org35fb6f8"></a>
 
 # Implémentation
 
 
-<a id="org4c5f724"></a>
+<a id="org69eb513"></a>
 
 ## Package declaration
 
 
-<a id="org3a6fe89"></a>
+<a id="org34506d6"></a>
 
 ### Fichier de setup
 
@@ -140,7 +163,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.5',
+    version='0.2.9',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -175,7 +198,7 @@ tree .
 ```
 
 
-<a id="org2dc5049"></a>
+<a id="org380a472"></a>
 
 ## Cli
 
@@ -198,7 +221,7 @@ def main():
 ```
 
 
-<a id="org1dac84d"></a>
+<a id="orgd7795da"></a>
 
 ## Dépendances
 
@@ -230,12 +253,12 @@ def choice_str(choices, target=''):
 ```
 
 
-<a id="orgb259a0c"></a>
+<a id="orgd206296"></a>
 
 ## TODO Class
 
 
-<a id="org4f9b2c8"></a>
+<a id="orgea4609f"></a>
 
 ### Init
 
@@ -306,6 +329,10 @@ class FastEval:
             self.cleanup_cmd = config['cleanup']
         else:
             self.cleanup_cmd = []
+        if 'export_to_html' in config:
+            self.export_to_html = config['export_to_html']
+        else:
+            self.export_to_html = True
 
         self.submissions = {}
         # Chargement de la config
@@ -332,10 +359,10 @@ class FastEval:
         self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
         self.print_step_errors('1_comp')
         self.write_data()
-        self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+        #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
         self.print_step_errors('2_exec')
         self.write_data()
-        self.cleanup()
+        self.export()
 
     def load_data(self):
         data_file = os.path.join(self.workspace_path, 'data.json')
@@ -460,7 +487,7 @@ class FastEval:
             for c in cmd:
                 try:
                     completed_process = subprocess.run([c], capture_output=True, text=True, shell=True, timeout=timeout)
-                    if completed_process.returncode == 1:
+                    if completed_process.returncode != 0:
                         comp_ok=False
                     cond = [len(completed_process.stderr) > 0, len(completed_process.stdout)]
                     if any(cond) and c not in self.submissions[sub]['steps'][step]:
@@ -485,6 +512,7 @@ class FastEval:
             print(f'           0 fails. {self.info_str("✓")}')
         else:
             print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
+        self.cleanup()
 
     def cleanup(self):
         for c in self.cleanup_cmd:
@@ -493,6 +521,87 @@ class FastEval:
                 print(f'Cleanup : {c} {self.info_str("✓")}')
             else:
                 print(f'Cleanup : {c} {self.erro_str("❌")}')
+    def export(self):
+        outpath = os.path.join(self.workspace_path, 'readme.org')
+        with open(outpath, 'w') as f:
+            f.write("#+title: Rapport d'évaluation\n")
+            for s in self.submissions:
+              step = self.submissions[s]['step']
+              f.write(f'** {s}\n')
+
+              # Section erreur prep
+              if step == '0_prep':
+                  f.write(f'*** Erreurs de préparation\n')
+                  for k, v in self.submissions[s]['steps']['0_prep'].items():
+                      f.write(f'{k} :\n')
+                      for i in v:
+                          f.write(f' - {i}\n')
+              # Section erreur comp
+              if step != '0_prep':
+                  ce = self.submissions[s]['steps']['1_comp']
+                  if ce:
+                      f.write(f'*** Erreurs de compilation\n')
+                  for k, v in ce.items():
+                      f.write(f'#+begin_src bash\n')
+                      f.write(f'{k}\n')
+                      f.write('#+end_src\n')
+                      f.write('\n#+name: stderror\n')
+                      f.write(f'#+begin_example\n')
+                      for line in v['stderr']:
+                          f.write(f'{line}\n')
+                      f.write('\n#+end_example\n')
+
+              # Section avec code rendu
+              if step != '0_prep':
+                  f.write(f'*** code\n')
+                  for sf in self.required_files:
+                      f.write(f'**** {sf}\n')
+                      # Détermination du langage
+                      l = os.path.splitext(sf)[-1][1:]
+                      if l == 'py':
+                        l = python
+                      if l == 'sh':
+                        l = bash
+                      # Copie du code de l'étudiant
+                      f.write(f'#+begin_src {l}\n')
+                      with open(os.path.join(self.submissions[s]['path'], 'eval', sf), 'r') as cf:
+                            f.write(cf.read())
+                      f.write('\n#+end_src\n')
+
+              # Section retour exécution
+              if step != '0_prep' and step != '1_comp':
+                  e = self.submissions[s]['steps']['2_exec']
+                  if e:
+                      f.write(f"*** Retours d'éxécution\n")
+                  for k, v in e.items():
+                      f.write(f'#+begin_src bash\n')
+                      f.write(f'{k}\n')
+                      f.write('#+end_src\n')
+                      if 'stderr' in v:
+                          f.write('\n#+name: stderror\n')
+                          f.write(f'#+begin_example\n')
+                          for line in v['stderr']:
+                              f.write(f'{line}\n')
+                          f.write('#+end_example\n')
+                      if 'stdout' in v:
+                          f.write('\n#+name: stdout\n')
+                          f.write(f'#+begin_example\n')
+                          for line in v['stdout']:
+                              f.write(f'{line}\n')
+                          f.write('#+end_example\n')
+
+        if self.export_to_html:
+            self.gen_html()
+    def gen_html(self, orgfile='readme.org', style='tango'):
+        inpath = os.path.join(self.workspace_path, 'readme.org')
+        outpath = os.path.join(self.workspace_path, 'readme.html')
+        cmd = shlex.split(f'pandoc -s {inpath} -o {outpath} --highlight-style {style} --template=easy_template.html --standalone --toc')
+        completed_process = subprocess.run(cmd)
+        if completed_process.returncode == 0:
+            print(f'Wrote  {self.info_str(outpath)} readable file. {self.info_str("✓")}')
+        else:
+           print('Error while generating html')
+
     def next_step(self, step):
         if step == '0_prep':
             return '1_comp'
@@ -521,7 +630,7 @@ class FastEval:
 ```
 
 
-<a id="orgc761a02"></a>
+<a id="org012263c"></a>
 
 ### Print Helpers
 
@@ -561,7 +670,7 @@ def print_step_errors(self, step):
 ```
 
 
-<a id="orgfc4c494"></a>
+<a id="orge154ce8"></a>
 
 ### Json data files
 
@@ -598,7 +707,7 @@ def write_data(self):
 ```
 
 
-<a id="orgd603c58"></a>
+<a id="org9a7e203"></a>
 
 ### Préparation
 
@@ -709,7 +818,7 @@ def check_prep(self):
 ```
 
 
-<a id="orgffb3aa8"></a>
+<a id="orgcb76d4a"></a>
 
 ### Compilation
 
@@ -737,7 +846,7 @@ def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
         for c in cmd:
             try:
                 completed_process = subprocess.run([c], capture_output=True, text=True, shell=True, timeout=timeout)
-                if completed_process.returncode == 1:
+                if completed_process.returncode != 0:
                     comp_ok=False
                 cond = [len(completed_process.stderr) > 0, len(completed_process.stdout)]
                 if any(cond) and c not in self.submissions[sub]['steps'][step]:
@@ -762,11 +871,12 @@ def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
         print(f'           0 fails. {self.info_str("✓")}')
     else:
         print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
+    self.cleanup()
 
 ```
 
 
-<a id="org97d55f2"></a>
+<a id="orgdac39c5"></a>
 
 ### Cleanup
 
@@ -781,9 +891,111 @@ def cleanup(self):
 ```
 
 
-<a id="org875bf53"></a>
+<a id="org0ea5b45"></a>
 
-# Déploiement vers Pypi
+### Export vers org-mode
+
+```python
+def export(self):
+    outpath = os.path.join(self.workspace_path, 'readme.org')
+    with open(outpath, 'w') as f:
+        f.write("#+title: Rapport d'évaluation\n")
+        for s in self.submissions:
+          step = self.submissions[s]['step']
+          f.write(f'** {s}\n')
+
+          # Section erreur prep
+          if step == '0_prep':
+              f.write(f'*** Erreurs de préparation\n')
+              for k, v in self.submissions[s]['steps']['0_prep'].items():
+                  f.write(f'{k} :\n')
+                  for i in v:
+                      f.write(f' - {i}\n')
+          # Section erreur comp
+          if step != '0_prep':
+              ce = self.submissions[s]['steps']['1_comp']
+              if ce:
+                  f.write(f'*** Erreurs de compilation\n')
+              for k, v in ce.items():
+                  f.write(f'#+begin_src bash\n')
+                  f.write(f'{k}\n')
+                  f.write('#+end_src\n')
+                  f.write('\n#+name: stderror\n')
+                  f.write(f'#+begin_example\n')
+                  for line in v['stderr']:
+                      f.write(f'{line}\n')
+                  f.write('\n#+end_example\n')
+
+          # Section avec code rendu
+          if step != '0_prep':
+              f.write(f'*** code\n')
+              for sf in self.required_files:
+                  f.write(f'**** {sf}\n')
+                  # Détermination du langage
+                  l = os.path.splitext(sf)[-1][1:]
+                  if l == 'py':
+                    l = python
+                  if l == 'sh':
+                    l = bash
+                  # Copie du code de l'étudiant
+                  f.write(f'#+begin_src {l}\n')
+                  with open(os.path.join(self.submissions[s]['path'], 'eval', sf), 'r') as cf:
+                        f.write(cf.read())
+                  f.write('\n#+end_src\n')
+
+          # Section retour exécution
+          if step != '0_prep' and step != '1_comp':
+              e = self.submissions[s]['steps']['2_exec']
+              if e:
+                  f.write(f"*** Retours d'éxécution\n")
+              for k, v in e.items():
+                  f.write(f'#+begin_src bash\n')
+                  f.write(f'{k}\n')
+                  f.write('#+end_src\n')
+                  if 'stderr' in v:
+                      f.write('\n#+name: stderror\n')
+                      f.write(f'#+begin_example\n')
+                      for line in v['stderr']:
+                          f.write(f'{line}\n')
+                      f.write('#+end_example\n')
+                  if 'stdout' in v:
+                      f.write('\n#+name: stdout\n')
+                      f.write(f'#+begin_example\n')
+                      for line in v['stdout']:
+                          f.write(f'{line}\n')
+                      f.write('#+end_example\n')
+
+    if self.export_to_html:
+        self.gen_html()
+```
+
+
+<a id="org96ad9e0"></a>
+
+### org vers html
+
+```python
+def gen_html(self, orgfile='readme.org', style='tango'):
+    inpath = os.path.join(self.workspace_path, 'readme.org')
+    outpath = os.path.join(self.workspace_path, 'readme.html')
+    cmd = shlex.split(f'pandoc -s {inpath} -o {outpath} --highlight-style {style} --template=easy_template.html --standalone --toc')
+    completed_process = subprocess.run(cmd)
+    if completed_process.returncode == 0:
+        print(f'Wrote  {self.info_str(outpath)} readable file. {self.info_str("✓")}')
+    else:
+       print('Error while generating html')
+
+```
+
+
+<a id="org69be47c"></a>
+
+# Déploiement
+
+
+<a id="orgbe3b8e3"></a>
+
+## Vers Pypi
 
 ```bash
 rm -rf dist/
@@ -795,9 +1007,9 @@ twine upload dist/*
 ```
 
 
-<a id="org2917a85"></a>
+<a id="org8e8413b"></a>
 
-# Github Pages
+## Github Pages
 
 ```bash
 mkdir docs
