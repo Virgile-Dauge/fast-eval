@@ -117,7 +117,8 @@ class FastEval:
         self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
         self.print_step_errors('1_comp')
         self.write_data()
-        #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+        self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+        self.cleanup()
         self.print_step_errors('2_exec')
         self.write_data()
         self.export()
@@ -163,11 +164,13 @@ class FastEval:
             os.mkdir(raw_dir)
             for o in os.listdir(self.submissions[sub]['path']):
                 shutil.move(os.path.join(self.submissions[sub]['path'],o), raw_dir)
-            files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
+            #files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
+            files = [os.path.join(raw_dir, f) for root, _, files in os.walk(raw_dir) for f in files]
+            print(files)
             for f in files:
                 try:
                     shutil.unpack_archive(f, raw_dir)
-                    os.remove(f)
+                    #os.remove(f)
                 except shutil.ReadError:
                     print('Unpack ' + self.warn_str(f) + ' failed.')
     
@@ -270,7 +273,6 @@ class FastEval:
             print(f'           0 fails. {self.info_str("✓")}')
         else:
             print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
-        self.cleanup()
     
     def cleanup(self):
         for c in self.cleanup_cmd:

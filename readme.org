@@ -68,6 +68,12 @@ Champs à adapter :
 :   -h, --help    show this help message and exit
 :   --ws WS       where to build workspace
 
+** know Issues
+
+Some Zip files unzip failed, idk why.
+
+ - zip files not marked with .zip
+ - other zip files
 * Concept
 ** Pourquoi ?
 L'objectif de ce projet est de faciliter l'évaluation de TPs d'info.
@@ -99,7 +105,7 @@ partie de l'évaluation.
 Cette automatisation ce concrétise par un programme python permettant
 de faire une grosse partie du travail fastidieux et répétitif
 nécessaire lors de l'évaluation de TPs/projets.
-
+m
 * Implémentation
 ** Package declaration
 *** Fichier de setup
@@ -296,7 +302,8 @@ tree .
           self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
           self.print_step_errors('1_comp')
           self.write_data()
-          #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+          self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+          self.cleanup()
           self.print_step_errors('2_exec')
           self.write_data()
           self.export()
@@ -418,11 +425,13 @@ tree .
           os.mkdir(raw_dir)
           for o in os.listdir(self.submissions[sub]['path']):
               shutil.move(os.path.join(self.submissions[sub]['path'],o), raw_dir)
-          files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
+          #files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
+          files = [os.path.join(raw_dir, f) for root, _, files in os.walk(raw_dir) for f in files]
+          print(files)
           for f in files:
               try:
                   shutil.unpack_archive(f, raw_dir)
-                  os.remove(f)
+                  #os.remove(f)
               except shutil.ReadError:
                   print('Unpack ' + self.warn_str(f) + ' failed.')
 
@@ -560,7 +569,6 @@ tree .
           print(f'           0 fails. {self.info_str("✓")}')
       else:
           print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
-      self.cleanup()
 
 #+end_src
 
