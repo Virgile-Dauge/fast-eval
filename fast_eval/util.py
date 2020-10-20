@@ -117,8 +117,8 @@ class FastEval:
         self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
         self.print_step_errors('1_comp')
         self.write_data()
-        self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
-        self.cleanup()
+        #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+        #self.cleanup()
         self.print_step_errors('2_exec')
         self.write_data()
         self.export()
@@ -286,70 +286,66 @@ class FastEval:
         with open(outpath, 'w') as f:
             f.write("#+title: Rapport d'évaluation\n")
             for s in self.submissions:
-              step = self.submissions[s]['step']
-              f.write(f'** {s}\n')
+                step = self.submissions[s]['step']
+                steps = self.submissions[s]['steps']
+                f.write(f'** {s}\n')
     
-              # Section erreur prep
-              if step == '0_prep':
-                  f.write(f'*** Erreurs de préparation\n')
-                  for k, v in self.submissions[s]['steps']['0_prep'].items():
-                      f.write(f'{k} :\n')
-                      for i in v:
-                          f.write(f' - {i}\n')
-              # Section erreur comp
-              if step != '0_prep':
-                  ce = self.submissions[s]['steps']['1_comp']
-                  if ce:
-                      f.write(f'*** Erreurs de compilation\n')
-                  for k, v in ce.items():
-                      f.write(f'#+begin_src bash\n')
-                      f.write(f'{k}\n')
-                      f.write('#+end_src\n')
-                      f.write('\n#+name: stderror\n')
-                      f.write(f'#+begin_example\n')
-                      for line in v['stderr']:
-                          f.write(f'{line}\n')
-                      f.write('\n#+end_example\n')
+                # Section erreur prep
+                if steps['0_prep']:
+                    f.write(f'*** Erreurs de préparation\n')
+                    for k, v in steps['0_prep'].items():
+                        f.write(f'{k} :\n')
+                        for i in v:
+                            f.write(f' - {i}\n')
+                # Section erreur comp
+                if steps['1_comp']:
+                    f.write(f'*** Erreurs de compilation\n')
+                    for k, v in steps['1_comp'].items():
+                        f.write(f'#+begin_src bash\n')
+                        f.write(f'{k}\n')
+                        f.write('#+end_src\n')
+                        f.write('\n#+name: stderror\n')
+                        f.write(f'#+begin_example\n')
+                        for line in v['stderr']:
+                            f.write(f'{line}\n')
+                        f.write('\n#+end_example\n')
     
-              # Section avec code rendu
-              if step != '0_prep':
-                  f.write(f'*** code\n')
-                  for sf in self.required_files:
-                      f.write(f'**** {sf}\n')
-                      # Détermination du langage
-                      l = os.path.splitext(sf)[-1][1:]
-                      if l == 'py':
-                        l = python
-                      if l == 'sh':
-                        l = bash
-                      # Copie du code de l'étudiant
-                      f.write(f'#+begin_src {l}\n')
-                      with open(os.path.join(self.submissions[s]['path'], 'eval', sf), 'r') as cf:
+                # Section avec code rendu
+                if step != '0_prep':
+                    f.write(f'*** code\n')
+                    for sf in self.required_files:
+                        f.write(f'**** {sf}\n')
+                        # Détermination du langage
+                        l = os.path.splitext(sf)[-1][1:]
+                        if l == 'py':
+                            l = python
+                        if l == 'sh':
+                            l = bash
+                        # Copie du code de l'étudiant
+                        f.write(f'#+begin_src {l}\n')
+                        with open(os.path.join(self.submissions[s]['path'], 'eval', sf), 'r') as cf:
                             f.write(cf.read())
-                      f.write('\n#+end_src\n')
+                        f.write('\n#+end_src\n')
     
-              # Section retour exécution
-              if step != '0_prep' and step != '1_comp':
-                  e = self.submissions[s]['steps']['2_exec']
-                  if e:
-                      f.write(f"*** Retours d'éxécution\n")
-                  for k, v in e.items():
-                      f.write(f'#+begin_src bash\n')
-                      f.write(f'{k}\n')
-                      f.write('#+end_src\n')
-                      if 'stderr' in v:
-                          f.write('\n#+name: stderror\n')
-                          f.write(f'#+begin_example\n')
-                          for line in v['stderr']:
-                              f.write(f'{line}\n')
-                          f.write('#+end_example\n')
-                      if 'stdout' in v:
-                          f.write('\n#+name: stdout\n')
-                          f.write(f'#+begin_example\n')
-                          for line in v['stdout']:
-                              f.write(f'{line}\n')
-                          f.write('#+end_example\n')
-    
+                # Section retour exécution
+                if steps['2_exec']:
+                    f.write(f"*** Retours d'éxécution\n")
+                    for k, v in steps['2_exec'].items():
+                        f.write(f'#+begin_src bash\n')
+                        f.write(f'{k}\n')
+                    f.write('#+end_src\n')
+                    if 'stderr' in v:
+                        f.write('\n#+name: stderror\n')
+                        f.write(f'#+begin_example\n')
+                        for line in v['stderr']:
+                            f.write(f'{line}\n')
+                        f.write('#+end_example\n')
+                    if 'stdout' in v:
+                        f.write('\n#+name: stdout\n')
+                        f.write(f'#+begin_example\n')
+                        for line in v['stdout']:
+                            f.write(f'{line}\n')
+                        f.write('#+end_example\n')
         if self.export_to_html:
             self.gen_html()
     def gen_html(self, orgfile='readme.org', style='tango'):
