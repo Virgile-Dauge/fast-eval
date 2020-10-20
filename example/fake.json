@@ -3,13 +3,13 @@
         "hello.c",
         "nohello.c"
     ],
-    "reference_folder": "~/coucou_ref",
+    "reference_folder": [],
     "compilation_commands": [
         "gcc hello.c -o hello -Wall",
         "gcc nohello.c -o nohello -Wall"
     ],
     "execution_commands": [
         "./hello",
- 	"./nohello"
+        "./nohello"
     ]
 }

@@ -1,36 +1,38 @@
-- [Mode d'emploi](#orgca74fe2)
-  - [Installation](#orgedf9cbe)
-    - [Optionnal requirements](#org19dace0)
-  - [Fichier de configuration](#org778f775)
-  - [Usage](#org146402f)
-- [Concept](#org42860e4)
-  - [Pourquoi ?](#orga706311)
-  - [Comment ?](#orga77cf18)
-- [Implémentation](#org35fb6f8)
-  - [Package declaration](#org69eb513)
-    - [Fichier de setup](#org34506d6)
-  - [Cli](#org380a472)
-  - [Dépendances](#orgd7795da)
-  - [Class](#orgd206296)
-    - [Init](#orgea4609f)
-    - [Print Helpers](#org012263c)
-    - [Json data files](#orge154ce8)
-    - [Préparation](#org9a7e203)
-    - [Compilation](#orgcb76d4a)
-    - [Cleanup](#orgdac39c5)
-    - [Export vers org-mode](#org0ea5b45)
-    - [org vers html](#org96ad9e0)
-- [Déploiement](#org69be47c)
-  - [Vers Pypi](#orgbe3b8e3)
-  - [Github Pages](#org8e8413b)
+- [Mode d'emploi](#orgbe4bcb2)
+  - [Installation](#orgcc18805)
+    - [Optionnal requirements](#orgca389fe)
+  - [Fichier de configuration](#orgc913d24)
+  - [Usage](#orgcc4cb4a)
+  - [Etapes de correction](#orgaea3be1)
+  - [know Issues](#orgd083cbe)
+- [Concept](#org58414e2)
+  - [Pourquoi ?](#orge46f22f)
+  - [Comment ?](#org47ddd0e)
+- [Implémentation](#orgeaa9166)
+  - [Package declaration](#org3efbb11)
+    - [Fichier de setup](#orgf4eb8d7)
+  - [Cli](#org1dd621d)
+  - [Dépendances](#org01a1839)
+  - [Class](#org666999d)
+    - [Init](#orgeea6d25)
+    - [Print Helpers](#org8e116e6)
+    - [Json data files](#orga941943)
+    - [Préparation](#org7439d86)
+    - [Compilation](#org6125f4b)
+    - [Cleanup](#org30679cf)
+    - [Export vers org-mode](#orgc5f1974)
+    - [org vers html](#org3e191d5)
+- [Déploiement](#org2748bf4)
+  - [Vers Pypi](#orgddd5eed)
+  - [Github Pages](#org7ad28ae)
 
 
-<a id="orgca74fe2"></a>
+<a id="orgbe4bcb2"></a>
 
 # TODO Mode d'emploi
 
 
-<a id="orgedf9cbe"></a>
+<a id="orgcc18805"></a>
 
 ## Installation
 
@@ -39,7 +41,7 @@ pip install fast-eval
 ```
 
 
-<a id="org19dace0"></a>
+<a id="orgca389fe"></a>
 
 ### Optionnal requirements
 
@@ -58,7 +60,7 @@ pip install fast-eval
     ```
 
 
-<a id="org778f775"></a>
+<a id="orgc913d24"></a>
 
 ## Fichier de configuration
 
@@ -78,7 +80,7 @@ Champs à adapter :
         "hello.c",
         "nohello.c"
     ],
-    "reference_folder": "~/coucou_ref",
+    "reference_folder": [],
     "compilation_commands": [
         "gcc hello.c -o hello -Wall",
         "gcc nohello.c -o nohello -Wall"
@@ -91,7 +93,7 @@ Champs à adapter :
 ```
 
 
-<a id="org146402f"></a>
+<a id="orgcc4cb4a"></a>
 
 ## Usage
 
@@ -113,12 +115,66 @@ fast-eval -h
                             increase output verbosity
 
 
-<a id="org42860e4"></a>
+<a id="orgaea3be1"></a>
+
+## Etapes de correction
+
+1.  Exécuter fast-eval
+
+```bash
+fast-eval example/fake.json example/fake.zip -v 2 -ws example/
+```
+
+fast-eval a crée l'ensemble des éléments nécessaires à la correction dans le *workspace* passé en argument :
+
+-   Un dossier par étudiant
+-   Un fichier de sauvegarde *data.json*
+-   Un fichier readme *readme.org* (à ouvrir dans emacs)
+-   un fichier readme *readme.html*, plus lisible, contenant l'ensemble des données récoltées ainsi que le code fourni par l'étudiant.
+
+```bash
+tree example
+```
+
+1.  Régler les soucis de préparation
+
+Ici pas d'erreurs que préparation l'on puisse corriger. Souvent, il s'agit d'un fichier ne respectant pas la convention de nommage imposée par le sujet. il faut donc copier **manuellement** les fichiers incorrectment nommés depuis le dossier *raw* de l'étudiant vers le dossier *eval* de l'étudiant, cette fois ci avec le bon nom.
+
+example :
+
+```bash
+mv example/Dupond\ Vide/raw/nom_incorrect.c example/Dupond\ Vide/eval/nom_correct.c
+```
+
+1.  Exécuter fast-eval
+
+```bash
+fast-eval example/fake.json example/fake.zip -v 2 -ws example/
+```
+
+1.  Consulter le rapport généré pour correction
+
+```bash
+firefox example/readme.html
+```
+
+
+<a id="orgd083cbe"></a>
+
+## know Issues
+
+Some Zip files unzip failed, idk why.
+
+-   zip files not marked with .zip
+-   other zip files
+
+
+<a id="org58414e2"></a>
 
 # Concept
 
 
-<a id="orga706311"></a>
+<a id="orge46f22f"></a>
 
 ## Pourquoi ?
 
@@ -133,7 +189,7 @@ L'objectif de ce projet est de faciliter l'évaluation de TPs d'info. Générale
 -   **Exécution et évaluation:** Faire tourner le programme et voir ce que cela donne. Une partie plus ou moins couvrante peut être déléguée à des logiciels de tests, permettant d'avoir rapidement une idée de la pertinence de la solution soumise.
 
 
-<a id="orga77cf18"></a>
+<a id="org47ddd0e"></a>
 
 ## Comment ?
 
@@ -142,17 +198,17 @@ Automatisation de la préparation, compilation et pourquoi pas d'une partie de l
 Cette automatisation ce concrétise par un programme python permettant de faire une grosse partie du travail fastidieux et répétitif nécessaire lors de l'évaluation de TPs/projets.
 
 
-<a id="org35fb6f8"></a>
+<a id="orgeaa9166"></a>
 
 # Implémentation
 
 
-<a id="org69eb513"></a>
+<a id="org3efbb11"></a>
 
 ## Package declaration
 
 
-<a id="org34506d6"></a>
+<a id="orgf4eb8d7"></a>
 
 ### Fichier de setup
 
@@ -198,7 +254,7 @@ tree .
 ```
 
 
-<a id="org380a472"></a>
+<a id="org1dd621d"></a>
 
 ## Cli
 
@@ -221,7 +277,7 @@ def main():
 ```
 
 
-<a id="orgd7795da"></a>
+<a id="org01a1839"></a>
 
 ## Dépendances
 
@@ -253,12 +309,12 @@ def choice_str(choices, target=''):
 ```
 
 
-<a id="orgd206296"></a>
+<a id="org666999d"></a>
 
 ## TODO Class
 
 
-<a id="orgea4609f"></a>
+<a id="orgeea6d25"></a>
 
 ### Init
 
@@ -360,6 +416,7 @@ class FastEval:
         self.print_step_errors('1_comp')
         self.write_data()
         #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+        #self.cleanup()
         self.print_step_errors('2_exec')
         self.write_data()
         self.export()
@@ -405,11 +462,13 @@ class FastEval:
             os.mkdir(raw_dir)
             for o in os.listdir(self.submissions[sub]['path']):
                 shutil.move(os.path.join(self.submissions[sub]['path'],o), raw_dir)
-            files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
+            #files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
+            files = [os.path.join(raw_dir, f) for root, _, files in os.walk(raw_dir) for f in files]
+            print(files)
             for f in files:
                 try:
                     shutil.unpack_archive(f, raw_dir)
-                    os.remove(f)
+                    #os.remove(f)
                 except shutil.ReadError:
                     print('Unpack ' + self.warn_str(f) + ' failed.')
 
@@ -512,7 +571,6 @@ class FastEval:
             print(f'           0 fails. {self.info_str("✓")}')
         else:
             print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
-        self.cleanup()
 
     def cleanup(self):
         for c in self.cleanup_cmd:
@@ -526,70 +584,66 @@ class FastEval:
         with open(outpath, 'w') as f:
             f.write("#+title: Rapport d'évaluation\n")
             for s in self.submissions:
-              step = self.submissions[s]['step']
-              f.write(f'** {s}\n')
+                step = self.submissions[s]['step']
+                steps = self.submissions[s]['steps']
+                f.write(f'** {s}\n')
 
-              # Section erreur prep
-              if step == '0_prep':
-                  f.write(f'*** Erreurs de préparation\n')
-                  for k, v in self.submissions[s]['steps']['0_prep'].items():
-                      f.write(f'{k} :\n')
-                      for i in v:
-                          f.write(f' - {i}\n')
-              # Section erreur comp
-              if step != '0_prep':
-                  ce = self.submissions[s]['steps']['1_comp']
-                  if ce:
-                      f.write(f'*** Erreurs de compilation\n')
-                  for k, v in ce.items():
-                      f.write(f'#+begin_src bash\n')
-                      f.write(f'{k}\n')
-                      f.write('#+end_src\n')
-                      f.write('\n#+name: stderror\n')
-                      f.write(f'#+begin_example\n')
-                      for line in v['stderr']:
-                          f.write(f'{line}\n')
-                      f.write('\n#+end_example\n')
+                # Section erreur prep
+                if steps['0_prep']:
+                    f.write(f'*** Erreurs de préparation\n')
+                    for k, v in steps['0_prep'].items():
+                        f.write(f'{k} :\n')
+                        for i in v:
+                            f.write(f' - {i}\n')
+                # Section erreur comp
+                if steps['1_comp']:
+                    f.write(f'*** Erreurs de compilation\n')
+                    for k, v in steps['1_comp'].items():
+                        f.write(f'#+begin_src bash\n')
+                        f.write(f'{k}\n')
+                        f.write('#+end_src\n')
+                        f.write('\n#+name: stderror\n')
+                        f.write(f'#+begin_example\n')
+                        for line in v['stderr']:
+                            f.write(f'{line}\n')
+                        f.write('\n#+end_example\n')
 
-              # Section avec code rendu
-              if step != '0_prep':
-                  f.write(f'*** code\n')
-                  for sf in self.required_files:
-                      f.write(f'**** {sf}\n')
-                      # Détermination du langage
-                      l = os.path.splitext(sf)[-1][1:]
-                      if l == 'py':
-                        l = python
-                      if l == 'sh':
-                        l = bash
-                      # Copie du code de l'étudiant
-                      f.write(f'#+begin_src {l}\n')
-                      with open(os.path.join(self.submissions[s]['path'], 'eval', sf), 'r') as cf:
+                # Section avec code rendu
+                if step != '0_prep':
+                    f.write(f'*** code\n')
+                    for sf in self.required_files:
+                        f.write(f'**** {sf}\n')
+                        # Détermination du langage
+                        l = os.path.splitext(sf)[-1][1:]
+                        if l == 'py':
+                            l = python
+                        if l == 'sh':
+                            l = bash
+                        # Copie du code de l'étudiant
+                        f.write(f'#+begin_src {l}\n')
+                        with open(os.path.join(self.submissions[s]['path'], 'eval', sf), 'r') as cf:
                             f.write(cf.read())
-                      f.write('\n#+end_src\n')
+                        f.write('\n#+end_src\n')
 
-              # Section retour exécution
-              if step != '0_prep' and step != '1_comp':
-                  e = self.submissions[s]['steps']['2_exec']
-                  if e:
-                      f.write(f"*** Retours d'éxécution\n")
-                  for k, v in e.items():
-                      f.write(f'#+begin_src bash\n')
-                      f.write(f'{k}\n')
-                      f.write('#+end_src\n')
-                      if 'stderr' in v:
-                          f.write('\n#+name: stderror\n')
-                          f.write(f'#+begin_example\n')
-                          for line in v['stderr']:
-                              f.write(f'{line}\n')
-                          f.write('#+end_example\n')
-                      if 'stdout' in v:
-                          f.write('\n#+name: stdout\n')
-                          f.write(f'#+begin_example\n')
-                          for line in v['stdout']:
-                              f.write(f'{line}\n')
-                          f.write('#+end_example\n')
-
+                # Section retour exécution
+                if steps['2_exec']:
+                    f.write(f"*** Retours d'éxécution\n")
+                    for k, v in steps['2_exec'].items():
+                        f.write(f'#+begin_src bash\n')
+                        f.write(f'{k}\n')
+                    f.write('#+end_src\n')
+                    if 'stderr' in v:
+                        f.write('\n#+name: stderror\n')
+                        f.write(f'#+begin_example\n')
+                        for line in v['stderr']:
+                            f.write(f'{line}\n')
+                        f.write('#+end_example\n')
+                    if 'stdout' in v:
+                        f.write('\n#+name: stdout\n')
+                        f.write(f'#+begin_example\n')
+                        for line in v['stdout']:
+                            f.write(f'{line}\n')
+                        f.write('#+end_example\n')
         if self.export_to_html:
             self.gen_html()
     def gen_html(self, orgfile='readme.org', style='tango'):
@@ -630,7 +684,7 @@ class FastEval:
 ```
 
 
-<a id="org012263c"></a>
+<a id="org8e116e6"></a>
 
 ### Print Helpers
 
@@ -670,7 +724,7 @@ def print_step_errors(self, step):
 ```
 
 
-<a id="orge154ce8"></a>
+<a id="orga941943"></a>
 
 ### Json data files
 
@@ -707,7 +761,7 @@ def write_data(self):
 ```
 
 
-<a id="org9a7e203"></a>
+<a id="org7439d86"></a>
 
 ### Préparation
 
@@ -730,11 +784,13 @@ def extract_dirs(self):
         os.mkdir(raw_dir)
         for o in os.listdir(self.submissions[sub]['path']):
             shutil.move(os.path.join(self.submissions[sub]['path'],o), raw_dir)
-        files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
+        #files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
+        files = [os.path.join(raw_dir, f) for root, _, files in os.walk(raw_dir) for f in files]
+        print(files)
         for f in files:
             try:
                 shutil.unpack_archive(f, raw_dir)
-                os.remove(f)
+                #os.remove(f)
             except shutil.ReadError:
                 print('Unpack ' + self.warn_str(f) + ' failed.')
 
@@ -818,7 +874,7 @@ def check_prep(self):
 ```
 
 
-<a id="orgcb76d4a"></a>
+<a id="org6125f4b"></a>
 
 ### Compilation
 
@@ -871,12 +927,11 @@ def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
         print(f'           0 fails. {self.info_str("✓")}')
     else:
         print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
-    self.cleanup()
 
 ```
 
 
-<a id="orgdac39c5"></a>
+<a id="org30679cf"></a>
 
 ### Cleanup
 
@@ -891,7 +946,7 @@ def cleanup(self):
 ```
 
 
-<a id="org0ea5b45"></a>
+<a id="orgc5f1974"></a>
 
 ### Export vers org-mode
 
@@ -901,76 +956,72 @@ def export(self):
     with open(outpath, 'w') as f:
         f.write("#+title: Rapport d'évaluation\n")
         for s in self.submissions:
-          step = self.submissions[s]['step']
-          f.write(f'** {s}\n')
+            step = self.submissions[s]['step']
+            steps = self.submissions[s]['steps']
+            f.write(f'** {s}\n')
 
-          # Section erreur prep
-          if step == '0_prep':
-              f.write(f'*** Erreurs de préparation\n')
-              for k, v in self.submissions[s]['steps']['0_prep'].items():
-                  f.write(f'{k} :\n')
-                  for i in v:
-                      f.write(f' - {i}\n')
-          # Section erreur comp
-          if step != '0_prep':
-              ce = self.submissions[s]['steps']['1_comp']
-              if ce:
-                  f.write(f'*** Erreurs de compilation\n')
-              for k, v in ce.items():
-                  f.write(f'#+begin_src bash\n')
-                  f.write(f'{k}\n')
-                  f.write('#+end_src\n')
-                  f.write('\n#+name: stderror\n')
-                  f.write(f'#+begin_example\n')
-                  for line in v['stderr']:
-                      f.write(f'{line}\n')
-                  f.write('\n#+end_example\n')
+            # Section erreur prep
+            if steps['0_prep']:
+                f.write(f'*** Erreurs de préparation\n')
+                for k, v in steps['0_prep'].items():
+                    f.write(f'{k} :\n')
+                    for i in v:
+                        f.write(f' - {i}\n')
+            # Section erreur comp
+            if steps['1_comp']:
+                f.write(f'*** Erreurs de compilation\n')
+                for k, v in steps['1_comp'].items():
+                    f.write(f'#+begin_src bash\n')
+                    f.write(f'{k}\n')
+                    f.write('#+end_src\n')
+                    f.write('\n#+name: stderror\n')
+                    f.write(f'#+begin_example\n')
+                    for line in v['stderr']:
+                        f.write(f'{line}\n')
+                    f.write('\n#+end_example\n')
 
-          # Section avec code rendu
-          if step != '0_prep':
-              f.write(f'*** code\n')
-              for sf in self.required_files:
-                  f.write(f'**** {sf}\n')
-                  # Détermination du langage
-                  l = os.path.splitext(sf)[-1][1:]
-                  if l == 'py':
-                    l = python
-                  if l == 'sh':
-                    l = bash
-                  # Copie du code de l'étudiant
-                  f.write(f'#+begin_src {l}\n')
-                  with open(os.path.join(self.submissions[s]['path'], 'eval', sf), 'r') as cf:
+            # Section avec code rendu
+            if step != '0_prep':
+                f.write(f'*** code\n')
+                for sf in self.required_files:
+                    f.write(f'**** {sf}\n')
+                    # Détermination du langage
+                    l = os.path.splitext(sf)[-1][1:]
+                    if l == 'py':
+                        l = python
+                    if l == 'sh':
+                        l = bash
+                    # Copie du code de l'étudiant
+                    f.write(f'#+begin_src {l}\n')
+                    with open(os.path.join(self.submissions[s]['path'], 'eval', sf), 'r') as cf:
                         f.write(cf.read())
-                  f.write('\n#+end_src\n')
+                    f.write('\n#+end_src\n')
 
-          # Section retour exécution
-          if step != '0_prep' and step != '1_comp':
-              e = self.submissions[s]['steps']['2_exec']
-              if e:
-                  f.write(f"*** Retours d'éxécution\n")
-              for k, v in e.items():
-                  f.write(f'#+begin_src bash\n')
-                  f.write(f'{k}\n')
-                  f.write('#+end_src\n')
-                  if 'stderr' in v:
-                      f.write('\n#+name: stderror\n')
-                      f.write(f'#+begin_example\n')
-                      for line in v['stderr']:
-                          f.write(f'{line}\n')
-                      f.write('#+end_example\n')
-                  if 'stdout' in v:
-                      f.write('\n#+name: stdout\n')
-                      f.write(f'#+begin_example\n')
-                      for line in v['stdout']:
-                          f.write(f'{line}\n')
-                      f.write('#+end_example\n')
-
+            # Section retour exécution
+            if steps['2_exec']:
+                f.write(f"*** Retours d'éxécution\n")
+                for k, v in steps['2_exec'].items():
+                    f.write(f'#+begin_src bash\n')
+                    f.write(f'{k}\n')
+                f.write('#+end_src\n')
+                if 'stderr' in v:
+                    f.write('\n#+name: stderror\n')
+                    f.write(f'#+begin_example\n')
+                    for line in v['stderr']:
+                        f.write(f'{line}\n')
+                    f.write('#+end_example\n')
+                if 'stdout' in v:
+                    f.write('\n#+name: stdout\n')
+                    f.write(f'#+begin_example\n')
+                    for line in v['stdout']:
+                        f.write(f'{line}\n')
+                    f.write('#+end_example\n')
     if self.export_to_html:
         self.gen_html()
 ```
 
 
-<a id="org96ad9e0"></a>
+<a id="org3e191d5"></a>
 
 ### org vers html
 
@@ -988,12 +1039,12 @@ def gen_html(self, orgfile='readme.org', style='tango'):
 ```
 
 
-<a id="org69be47c"></a>
+<a id="org2748bf4"></a>
 
 # Déploiement
 
 
-<a id="orgbe3b8e3"></a>
+<a id="orgddd5eed"></a>
 
 ## Vers Pypi
 
@@ -1007,7 +1058,7 @@ twine upload dist/*
 ```
 
 
-<a id="org8e8413b"></a>
+<a id="org7ad28ae"></a>
 
 ## Github Pages
 

@@ -34,21 +34,21 @@ Champs à adapter :
 - execution_commands :: Liste de commandes à effectuer lors de l'étape
   d'exécution/évaluation. Liste vide si rien à faire.
 #+BEGIN_SRC json :tangle example/fake.json
-{
-    "required_files": [
-        "hello.c",
-        "nohello.c"
-    ],
-    "reference_folder": "~/coucou_ref",
-    "compilation_commands": [
-        "gcc hello.c -o hello -Wall",
-        "gcc nohello.c -o nohello -Wall"
-    ],
-    "execution_commands": [
-        "./hello",
-    "./nohello"
-    ]
-}
+  {
+      "required_files": [
+          "hello.c",
+          "nohello.c"
+      ],
+      "reference_folder": [],
+      "compilation_commands": [
+          "gcc hello.c -o hello -Wall",
+          "gcc nohello.c -o nohello -Wall"
+      ],
+      "execution_commands": [
+          "./hello",
+          "./nohello"
+      ]
+  }
 #+END_SRC
 
 ** Usage
@@ -67,6 +67,126 @@ Champs à adapter :
 : optional arguments:
 :   -h, --help    show this help message and exit
 :   --ws WS       where to build workspace
+
+** Etapes de correction
+1. Exécuter fast-eval
+#+BEGIN_SRC bash :results output
+  fast-eval example/fake.json example/fake.zip -v 2 -ws example/
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Using  [38;5;37m[1m/home/virgile/ws/fast-eval/example[0m as workspace. [38;5;37m[1m✓[0m
+Loaded [38;5;37m[1mexample/fake.json[0m savefile. [38;5;37m[1m✓[0m
+Not using ref folder
+Loaded [38;5;37m[1m/home/virgile/ws/fast-eval/example/data.json[0m savefile. [38;5;37m[1m✓[0m
+
+Processing 3 projects...
+
+Checking   1 projects...
+           [48;5;131m[38;5;15m1 fails.[0m
+
+Fail list : ['Dupond Vide']
+
+Dupond Vide's errors :
+ {'missing_files': ['hello.c', 'nohello.c']}
+
+
+Wrote  [38;5;37m[1m/home/virgile/ws/fast-eval/example/data.json[0m savefile. [38;5;37m[1m✓[0m
+Compiling  1 projects...
+           [48;5;131m[38;5;15m1 fails.[0m
+
+Fail list : ['Daugé Virgile']
+
+Daugé Virgile's errors :
+ {'gcc hello.c -o hello -Wall': {'stderr': ['hello.c: In function ‘main’:', 'hello.c:1:12: warning: implicit declaration of function ‘printf’ [-Wimplicit-function-declaration]', '    1 | int main(){printf("coucou\\n"); oups = "1"; return 0;}', '      |            ^~~~~~', 'hello.c:1:12: warning: incompatible implicit declaration of built-in function ‘printf’', 'hello.c:1:1: note: include ‘<stdio.h>’ or provide a declaration of ‘printf’', '  +++ |+#include <stdio.h>', '    1 | int main(){printf("coucou\\n"); oups = "1"; return 0;}', 'hello.c:1:32: error: ‘oups’ undeclared (first use in this function)', '    1 | int main(){printf("coucou\\n"); oups = "1"; return 0;}', '      |                                ^~~~', 'hello.c:1:32: note: each undeclared identifier is reported only once for each function it appears in', '']}, 'gcc nohello.c -o nohello -Wall': {'stderr': ['nohello.c: In function ‘main’:', 'nohello.c:1:20: warning: unused variable ‘msg’ [-Wunused-variable]', '    1 | int main(){ char * msg = "nohello"; return 0;}', '      |                    ^~~', '']}}
+
+
+Wrote  [38;5;37m[1m/home/virgile/ws/fast-eval/example/data.json[0m savefile. [38;5;37m[1m✓[0m
+Fail list : ['Zipeur Thomas']
+
+Zipeur Thomas's errors :
+ {}
+
+
+Wrote  [38;5;37m[1m/home/virgile/ws/fast-eval/example/data.json[0m savefile. [38;5;37m[1m✓[0m
+Wrote  [38;5;37m[1m/home/virgile/ws/fast-eval/example/readme.html[0m readable file. [38;5;37m[1m✓[0m
+#+end_example
+
+fast-eval a crée l'ensemble des éléments nécessaires à la correction
+dans le /workspace/ passé en argument :
+
+- Un dossier par étudiant
+- Un fichier de sauvegarde /data.json/
+- Un fichier readme /readme.org/ (à ouvrir dans emacs)
+- un fichier readme /readme.html/, plus lisible, contenant l'ensemble
+  des données récoltées ainsi que le code fourni par l'étudiant.
+#+BEGIN_SRC bash :results output
+  tree example
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+example
+├── data.json
+├── Daugé Virgile
+│   ├── eval
+│   │   ├── hello.c
+│   │   ├── nohello
+│   │   └── nohello.c
+│   └── raw
+│       ├── a.out
+│       ├── fichierquitraine
+│       ├── hello
+│       ├── hello.c
+│       └── nohello.c
+├── Dupond Vide
+│   ├── eval
+│   └── raw
+├── fake.json
+├── fake.zip
+├── readme.html
+├── readme.org
+└── Zipeur Thomas
+    ├── eval
+    │   ├── hello
+    │   ├── hello.c
+    │   ├── nohello
+    │   └── nohello.c
+    └── raw
+        ├── a.out
+        ├── exo1fils.c
+        ├── hello
+        ├── hello.c
+        ├── nohello.c
+        └── tommy.zip
+
+9 directories, 23 files
+#+end_example
+
+2. Régler les soucis de préparation
+Ici pas d'erreurs que préparation l'on puisse corriger. Souvent, il
+s'agit d'un fichier ne respectant pas la convention de nommage imposée
+par le sujet.  il faut donc copier *manuellement* les fichiers
+incorrectment nommés depuis le dossier /raw/ de l'étudiant vers le
+dossier /eval/ de l'étudiant, cette fois ci avec le bon nom.
+
+example :
+#+BEGIN_SRC bash
+  mv example/Dupond\ Vide/raw/nom_incorrect.c example/Dupond\ Vide/eval/nom_correct.c
+#+END_SRC
+
+3. Exécuter fast-eval
+#+BEGIN_SRC bash :results output
+  fast-eval example/fake.json example/fake.zip -v 2 -ws example/
+#+END_SRC
+
+4. Consulter le rapport généré pour correction
+#+BEGIN_SRC bash :results output
+  firefox example/readme.html
+#+END_SRC
+
+#+RESULTS:
 
 ** know Issues
 
@@ -115,7 +235,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.9',
+    version='0.2.10',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -689,24 +809,24 @@ writing top-level names to fast_eval.egg-info/top_level.txt
 reading manifest file 'fast_eval.egg-info/SOURCES.txt'
 writing manifest file 'fast_eval.egg-info/SOURCES.txt'
 running check
-creating fast-eval-0.2.9
-creating fast-eval-0.2.9/fast_eval
-creating fast-eval-0.2.9/fast_eval.egg-info
-copying files to fast-eval-0.2.9...
-copying setup.py -> fast-eval-0.2.9
-copying fast_eval/__init__.py -> fast-eval-0.2.9/fast_eval
-copying fast_eval/__main__.py -> fast-eval-0.2.9/fast_eval
-copying fast_eval/util.py -> fast-eval-0.2.9/fast_eval
-copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.9/fast_eval.egg-info
-copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.9/fast_eval.egg-info
-copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.9/fast_eval.egg-info
-copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.9/fast_eval.egg-info
-copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.9/fast_eval.egg-info
-copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.9/fast_eval.egg-info
-Writing fast-eval-0.2.9/setup.cfg
+creating fast-eval-0.2.10
+creating fast-eval-0.2.10/fast_eval
+creating fast-eval-0.2.10/fast_eval.egg-info
+copying files to fast-eval-0.2.10...
+copying setup.py -> fast-eval-0.2.10
+copying fast_eval/__init__.py -> fast-eval-0.2.10/fast_eval
+copying fast_eval/__main__.py -> fast-eval-0.2.10/fast_eval
+copying fast_eval/util.py -> fast-eval-0.2.10/fast_eval
+copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.10/fast_eval.egg-info
+copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.10/fast_eval.egg-info
+copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.10/fast_eval.egg-info
+copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.10/fast_eval.egg-info
+copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.10/fast_eval.egg-info
+copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.10/fast_eval.egg-info
+Writing fast-eval-0.2.10/setup.cfg
 creating dist
 Creating tar archive
-removing 'fast-eval-0.2.9' (and everything under it)
+removing 'fast-eval-0.2.10' (and everything under it)
 #+end_example
 
 #+BEGIN_SRC bash
