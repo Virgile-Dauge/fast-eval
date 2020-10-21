@@ -108,6 +108,7 @@ class FastEval:
             self.copy_ref()
             print('\n')
             self.prep_step()
+            self.gen_csv()
         else:
             print('Processing {} projects...\n'.format(len(self.submissions)))
             self.check_prep()
@@ -117,8 +118,8 @@ class FastEval:
         self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
         self.print_step_errors('1_comp')
         self.write_data()
-        #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
-        #self.cleanup()
+        self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+        self.cleanup()
         self.print_step_errors('2_exec')
         self.write_data()
         self.export()
@@ -236,7 +237,10 @@ class FastEval:
                 self.submissions[sub]['step'] = '1_comp'
     
         to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-        print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
+        if len(to_check) == 0:
+            print(f'           0 fails. {self.info_str("✓")}')
+        else:
+            print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
     def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
         print('{}  {} projects...'.format(label, len(to_exec)))
@@ -358,6 +362,11 @@ class FastEval:
         else:
            print('Error while generating html')
     
+    def gen_csv(self):
+        outpath = os.path.join(self.workspace_path, 'notes.csv')
+        with open(outpath, 'w') as f:
+            for s in self.submissions:
+                f.write(f'{s}, note\n')
     def next_step(self, step):
         if step == '0_prep':
             return '1_comp'

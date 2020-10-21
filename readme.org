@@ -412,6 +412,7 @@ tree .
               self.copy_ref()
               print('\n')
               self.prep_step()
+              self.gen_csv()
           else:
               print('Processing {} projects...\n'.format(len(self.submissions)))
               self.check_prep()
@@ -421,8 +422,8 @@ tree .
           self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
           self.print_step_errors('1_comp')
           self.write_data()
-          #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
-          #self.cleanup()
+          self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+          self.cleanup()
           self.print_step_errors('2_exec')
           self.write_data()
           self.export()
@@ -438,6 +439,7 @@ tree .
       <<cleanup>>
       <<export>>
       <<gen_html>>
+      <<gen_csv>>
       <<next_step>>
       <<erro_str>>
       <<warn_str>>
@@ -633,7 +635,10 @@ tree .
               self.submissions[sub]['step'] = '1_comp'
 
       to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-      print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
+      if len(to_check) == 0:
+          print(f'           0 fails. {self.info_str("✓")}')
+      else:
+          print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
 #+end_src
 *** Compilation
 
@@ -788,6 +793,15 @@ tree .
       else:
          print('Error while generating html')
 
+#+end_src
+*** gen csv with names
+#+name: gen_csv
+#+begin_src python
+  def gen_csv(self):
+      outpath = os.path.join(self.workspace_path, 'notes.csv')
+      with open(outpath, 'w') as f:
+          for s in self.submissions:
+              f.write(f'{s}, note\n')
 #+end_src
 * Déploiement
 ** Vers Pypi
