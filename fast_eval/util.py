@@ -365,8 +365,11 @@ class FastEval:
     def gen_csv(self):
         outpath = os.path.join(self.workspace_path, 'notes.csv')
         with open(outpath, 'w') as f:
-            for s in self.submissions:
-                f.write(f'{s}, note\n')
+            names = [s for s in self.submissions]
+            names.sort()
+            print(names)
+            for n in names:
+                f.write(f'{n}, note\n')
     def next_step(self, step):
         if step == '0_prep':
             return '1_comp'
