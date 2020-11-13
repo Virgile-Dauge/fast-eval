@@ -1,0 +1,86 @@
+#+title: Rapport d'évaluation
+** Daugé Virgile
+*** Erreurs de compilation
+#+begin_src bash
+gcc hello.c -o hello -Wall
+#+end_src
+
+#+name: stderror
+#+begin_example
+hello.c: In function ‘main’:
+hello.c:1:12: warning: implicit declaration of function ‘printf’ [-Wimplicit-function-declaration]
+    1 | int main(){printf("coucou\n"); oups = "1"; return 0;}
+      |            ^~~~~~
+hello.c:1:12: warning: incompatible implicit declaration of built-in function ‘printf’
+hello.c:1:1: note: include ‘<stdio.h>’ or provide a declaration of ‘printf’
+  +++ |+#include <stdio.h>
+    1 | int main(){printf("coucou\n"); oups = "1"; return 0;}
+hello.c:1:32: error: ‘oups’ undeclared (first use in this function)
+    1 | int main(){printf("coucou\n"); oups = "1"; return 0;}
+      |                                ^~~~
+hello.c:1:32: note: each undeclared identifier is reported only once for each function it appears in
+
+
+#+end_example
+#+begin_src bash
+gcc nohello.c -o nohello -Wall
+#+end_src
+
+#+name: stderror
+#+begin_example
+nohello.c: In function ‘main’:
+nohello.c:1:20: warning: unused variable ‘msg’ [-Wunused-variable]
+    1 | int main(){ char * msg = "nohello"; return 0;}
+      |                    ^~~
+
+
+#+end_example
+*** code
+**** hello.c
+#+begin_src c
+int main(){printf("coucou\n"); oups = "1"; return 0;}
+
+#+end_src
+**** nohello.c
+#+begin_src c
+int main(){ char * msg = "nohello"; return 0;}
+
+#+end_src
+** Dupond Vide
+*** Erreurs de préparation
+missing_files :
+ - hello.c
+ - nohello.c
+** Zipeur Thomas
+*** Erreurs de compilation
+#+begin_src bash
+gcc hello.c -o hello -Wall
+#+end_src
+
+#+name: stderror
+#+begin_example
+hello.c: In function ‘main’:
+hello.c:1:12: warning: implicit declaration of function ‘printf’ [-Wimplicit-function-declaration]
+    1 | int main(){printf("coucou\n"); return 0;}
+      |            ^~~~~~
+hello.c:1:12: warning: incompatible implicit declaration of built-in function ‘printf’
+hello.c:1:1: note: include ‘<stdio.h>’ or provide a declaration of ‘printf’
+  +++ |+#include <stdio.h>
+    1 | int main(){printf("coucou\n"); return 0;}
+
+
+#+end_example
+*** code
+**** hello.c
+#+begin_src c
+int main(){printf("coucou\n"); return 0;}
+
+#+end_src
+**** nohello.c
+#+begin_src c
+int main(void){
+    char *s = "hello world";
+    *s = 'H';
+}
+
+#+end_src

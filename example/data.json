@@ -1,0 +1,81 @@
+{
+    "pass_count": 1,
+    "submissions": {
+        "Daugé Virgile": {
+            "path": "/home/virgile/ws/fast-eval/example/Daugé Virgile",
+            "step": "1_comp",
+            "steps": {
+                "0_prep": {},
+                "1_comp": {
+                    "gcc hello.c -o hello -Wall": {
+                        "stderr": [
+                            "hello.c: In function ‘main’:",
+                            "hello.c:1:12: warning: implicit declaration of function ‘printf’ [-Wimplicit-function-declaration]",
+                            "    1 | int main(){printf(\"coucou\\n\"); oups = \"1\"; return 0;}",
+                            "      |            ^~~~~~",
+                            "hello.c:1:12: warning: incompatible implicit declaration of built-in function ‘printf’",
+                            "hello.c:1:1: note: include ‘<stdio.h>’ or provide a declaration of ‘printf’",
+                            "  +++ |+#include <stdio.h>",
+                            "    1 | int main(){printf(\"coucou\\n\"); oups = \"1\"; return 0;}",
+                            "hello.c:1:32: error: ‘oups’ undeclared (first use in this function)",
+                            "    1 | int main(){printf(\"coucou\\n\"); oups = \"1\"; return 0;}",
+                            "      |                                ^~~~",
+                            "hello.c:1:32: note: each undeclared identifier is reported only once for each function it appears in",
+                            ""
+                        ]
+                    },
+                    "gcc nohello.c -o nohello -Wall": {
+                        "stderr": [
+                            "nohello.c: In function ‘main’:",
+                            "nohello.c:1:20: warning: unused variable ‘msg’ [-Wunused-variable]",
+                            "    1 | int main(){ char * msg = \"nohello\"; return 0;}",
+                            "      |                    ^~~",
+                            ""
+                        ]
+                    }
+                },
+                "2_exec": {},
+                "3_eval": {}
+            }
+        },
+        "Dupond Vide": {
+            "path": "/home/virgile/ws/fast-eval/example/Dupond Vide",
+            "step": "0_prep",
+            "steps": {
+                "0_prep": {
+                    "missing_files": [
+                        "hello.c",
+                        "nohello.c"
+                    ]
+                },
+                "1_comp": {},
+                "2_exec": {},
+                "3_eval": {}
+            }
+        },
+        "Zipeur Thomas": {
+            "path": "/home/virgile/ws/fast-eval/example/Zipeur Thomas",
+            "step": "2_exec",
+            "steps": {
+                "0_prep": {},
+                "1_comp": {
+                    "gcc hello.c -o hello -Wall": {
+                        "stderr": [
+                            "hello.c: In function ‘main’:",
+                            "hello.c:1:12: warning: implicit declaration of function ‘printf’ [-Wimplicit-function-declaration]",
+                            "    1 | int main(){printf(\"coucou\\n\"); return 0;}",
+                            "      |            ^~~~~~",
+                            "hello.c:1:12: warning: incompatible implicit declaration of built-in function ‘printf’",
+                            "hello.c:1:1: note: include ‘<stdio.h>’ or provide a declaration of ‘printf’",
+                            "  +++ |+#include <stdio.h>",
+                            "    1 | int main(){printf(\"coucou\\n\"); return 0;}",
+                            ""
+                        ]
+                    }
+                },
+                "2_exec": {},
+                "3_eval": {}
+            }
+        }
+    }
+}
