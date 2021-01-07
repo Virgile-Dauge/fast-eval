@@ -303,16 +303,22 @@ class FastEval:
                             f.write(f' - {i}\n')
                 # Section erreur comp
                 if steps['1_comp']:
-                    f.write(f'*** Erreurs de compilation\n')
-                    for k, v in steps['1_comp'].items():
-                        f.write(f'#+begin_src bash\n')
-                        f.write(f'{k}\n')
-                        f.write('#+end_src\n')
-                        f.write('\n#+name: stderror\n')
-                        f.write(f'#+begin_example\n')
-                        for line in v['stderr']:
-                            f.write(f'{line}\n')
-                        f.write('\n#+end_example\n')
+                    usefull = False
+                    for v in steps['1_comp'].values():
+                        if 'stderr' in v:
+                            usefull = True
+                    if usefull:
+                        f.write(f'*** Erreurs de compilation\n')
+                        for k, v in steps['1_comp'].items():
+                            f.write(f'#+begin_src bash\n')
+                            f.write(f'{k}\n')
+                            f.write('#+end_src\n')
+    
+                            f.write('\n#+name: stderror\n')
+                            f.write(f'#+begin_example\n')
+                            for line in v['stderr']:
+                                f.write(f'{line}\n')
+                            f.write('\n#+end_example\n')
     
                 # Section avec code rendu
                 if step != '0_prep':

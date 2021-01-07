@@ -21,17 +21,17 @@ Install pandoc theme
 ** Fichier de configuration
 Champs à adapter :
 
-- required_files :: Fichiers à chercher dans le rendu des étudiants.
+- required files :: Fichiers à chercher dans le rendu des étudiants.
 
-- reference_folder :: Dossier dont le contenu est à copier dans le
+- reference folder :: Dossier dont le contenu est à copier dans le
   dossier d'évaluation de chaque rendu. Cela peut être des /headers/
   nécessaires à la compilation, des programmes de tests etc... Chaîne
   vide si pas besoin de dossier de référence.
 
-- comp_commands :: Liste de commandes à effectuer lors de l'étape de
+- comp commands :: Liste de commandes à effectuer lors de l'étape de
   compilation. Liste vide si rien à faire.
 
-- execution_commands :: Liste de commandes à effectuer lors de l'étape
+- execution commands :: Liste de commandes à effectuer lors de l'étape
   d'exécution/évaluation. Liste vide si rien à faire.
 #+BEGIN_SRC json :tangle example/fake.json
   {
@@ -39,7 +39,7 @@ Champs à adapter :
           "hello.c",
           "nohello.c"
       ],
-      "reference_folder": [],
+      "reference_folder": "./ref",
       "compilation_commands": [
           "gcc hello.c -o hello -Wall",
           "gcc nohello.c -o nohello -Wall"
@@ -235,7 +235,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.11',
+    version='0.2.12',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -730,16 +730,22 @@ tree .
                           f.write(f' - {i}\n')
               # Section erreur comp
               if steps['1_comp']:
-                  f.write(f'*** Erreurs de compilation\n')
-                  for k, v in steps['1_comp'].items():
-                      f.write(f'#+begin_src bash\n')
-                      f.write(f'{k}\n')
-                      f.write('#+end_src\n')
-                      f.write('\n#+name: stderror\n')
-                      f.write(f'#+begin_example\n')
-                      for line in v['stderr']:
-                          f.write(f'{line}\n')
-                      f.write('\n#+end_example\n')
+                  usefull = False
+                  for v in steps['1_comp'].values():
+                      if 'stderr' in v:
+                          usefull = True
+                  if usefull:
+                      f.write(f'*** Erreurs de compilation\n')
+                      for k, v in steps['1_comp'].items():
+                          f.write(f'#+begin_src bash\n')
+                          f.write(f'{k}\n')
+                          f.write('#+end_src\n')
+
+                          f.write('\n#+name: stderror\n')
+                          f.write(f'#+begin_example\n')
+                          for line in v['stderr']:
+                              f.write(f'{line}\n')
+                          f.write('\n#+end_example\n')
 
               # Section avec code rendu
               if step != '0_prep':
@@ -826,24 +832,24 @@ writing top-level names to fast_eval.egg-info/top_level.txt
 reading manifest file 'fast_eval.egg-info/SOURCES.txt'
 writing manifest file 'fast_eval.egg-info/SOURCES.txt'
 running check
-creating fast-eval-0.2.11
-creating fast-eval-0.2.11/fast_eval
-creating fast-eval-0.2.11/fast_eval.egg-info
-copying files to fast-eval-0.2.11...
-copying setup.py -> fast-eval-0.2.11
-copying fast_eval/__init__.py -> fast-eval-0.2.11/fast_eval
-copying fast_eval/__main__.py -> fast-eval-0.2.11/fast_eval
-copying fast_eval/util.py -> fast-eval-0.2.11/fast_eval
-copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.11/fast_eval.egg-info
-copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.11/fast_eval.egg-info
-copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.11/fast_eval.egg-info
-copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.11/fast_eval.egg-info
-copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.11/fast_eval.egg-info
-copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.11/fast_eval.egg-info
-Writing fast-eval-0.2.11/setup.cfg
+creating fast-eval-0.2.12
+creating fast-eval-0.2.12/fast_eval
+creating fast-eval-0.2.12/fast_eval.egg-info
+copying files to fast-eval-0.2.12...
+copying setup.py -> fast-eval-0.2.12
+copying fast_eval/__init__.py -> fast-eval-0.2.12/fast_eval
+copying fast_eval/__main__.py -> fast-eval-0.2.12/fast_eval
+copying fast_eval/util.py -> fast-eval-0.2.12/fast_eval
+copying fast_eval.egg-info/PKG-INFO -> fast-eval-0.2.12/fast_eval.egg-info
+copying fast_eval.egg-info/SOURCES.txt -> fast-eval-0.2.12/fast_eval.egg-info
+copying fast_eval.egg-info/dependency_links.txt -> fast-eval-0.2.12/fast_eval.egg-info
+copying fast_eval.egg-info/entry_points.txt -> fast-eval-0.2.12/fast_eval.egg-info
+copying fast_eval.egg-info/requires.txt -> fast-eval-0.2.12/fast_eval.egg-info
+copying fast_eval.egg-info/top_level.txt -> fast-eval-0.2.12/fast_eval.egg-info
+Writing fast-eval-0.2.12/setup.cfg
 creating dist
 Creating tar archive
-removing 'fast-eval-0.2.11' (and everything under it)
+removing 'fast-eval-0.2.12' (and everything under it)
 #+end_example
 
 #+BEGIN_SRC bash

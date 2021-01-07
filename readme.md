@@ -1,38 +1,39 @@
-- [Mode d'emploi](#orgbe4bcb2)
-  - [Installation](#orgcc18805)
-    - [Optionnal requirements](#orgca389fe)
-  - [Fichier de configuration](#orgc913d24)
-  - [Usage](#orgcc4cb4a)
-  - [Etapes de correction](#orgaea3be1)
-  - [know Issues](#orgd083cbe)
-- [Concept](#org58414e2)
-  - [Pourquoi ?](#orge46f22f)
-  - [Comment ?](#org47ddd0e)
-- [Implémentation](#orgeaa9166)
-  - [Package declaration](#org3efbb11)
-    - [Fichier de setup](#orgf4eb8d7)
-  - [Cli](#org1dd621d)
-  - [Dépendances](#org01a1839)
-  - [Class](#org666999d)
-    - [Init](#orgeea6d25)
-    - [Print Helpers](#org8e116e6)
-    - [Json data files](#orga941943)
-    - [Préparation](#org7439d86)
-    - [Compilation](#org6125f4b)
-    - [Cleanup](#org30679cf)
-    - [Export vers org-mode](#orgc5f1974)
-    - [org vers html](#org3e191d5)
-- [Déploiement](#org2748bf4)
-  - [Vers Pypi](#orgddd5eed)
-  - [Github Pages](#org7ad28ae)
+- [Mode d'emploi](#org3a865d3)
+  - [Installation](#orgff1f5b3)
+    - [Optionnal requirements](#org0ff73de)
+  - [Fichier de configuration](#org020a073)
+  - [Usage](#orgfda3727)
+  - [Etapes de correction](#orgd001678)
+  - [know Issues](#org50533cb)
+- [Concept](#org1e4d539)
+  - [Pourquoi ?](#org84d0474)
+  - [Comment ?](#org4e85eb7)
+- [Implémentation](#orgefcc171)
+  - [Package declaration](#org5fbf4a7)
+    - [Fichier de setup](#orgc398c8a)
+  - [Cli](#orga2ee76c)
+  - [Dépendances](#org105703a)
+  - [Class](#org36ef68d)
+    - [Init](#org4f4daa3)
+    - [Print Helpers](#org54e11cd)
+    - [Json data files](#orgda9fc09)
+    - [Préparation](#org6f33e0e)
+    - [Compilation](#org5a1b366)
+    - [Cleanup](#org03f16b6)
+    - [Export vers org-mode](#org308d3ce)
+    - [org vers html](#org58a6783)
+    - [gen csv with names](#org476d838)
+- [Déploiement](#orga90453c)
+  - [Vers Pypi](#org9e8faa7)
+  - [Github Pages](#org8b75108)
 
 
-<a id="orgbe4bcb2"></a>
+<a id="org3a865d3"></a>
 
 # TODO Mode d'emploi
 
 
-<a id="orgcc18805"></a>
+<a id="orgff1f5b3"></a>
 
 ## Installation
 
@@ -41,7 +42,7 @@ pip install fast-eval
 ```
 
 
-<a id="orgca389fe"></a>
+<a id="org0ff73de"></a>
 
 ### Optionnal requirements
 
@@ -60,19 +61,19 @@ pip install fast-eval
     ```
 
 
-<a id="orgc913d24"></a>
+<a id="org020a073"></a>
 
 ## Fichier de configuration
 
 Champs à adapter :
 
--   **required<sub>files</sub>:** Fichiers à chercher dans le rendu des étudiants.
+-   **required files:** Fichiers à chercher dans le rendu des étudiants.
 
--   **reference<sub>folder</sub>:** Dossier dont le contenu est à copier dans le dossier d'évaluation de chaque rendu. Cela peut être des *headers* nécessaires à la compilation, des programmes de tests etc&#x2026; Chaîne vide si pas besoin de dossier de référence.
+-   **reference folder:** Dossier dont le contenu est à copier dans le dossier d'évaluation de chaque rendu. Cela peut être des *headers* nécessaires à la compilation, des programmes de tests etc&#x2026; Chaîne vide si pas besoin de dossier de référence.
 
--   **comp<sub>commands</sub>:** Liste de commandes à effectuer lors de l'étape de compilation. Liste vide si rien à faire.
+-   **comp commands:** Liste de commandes à effectuer lors de l'étape de compilation. Liste vide si rien à faire.
 
--   **execution<sub>commands</sub>:** Liste de commandes à effectuer lors de l'étape d'exécution/évaluation. Liste vide si rien à faire.
+-   **execution commands:** Liste de commandes à effectuer lors de l'étape d'exécution/évaluation. Liste vide si rien à faire.
 
 ```json
 {
@@ -80,7 +81,7 @@ Champs à adapter :
         "hello.c",
         "nohello.c"
     ],
-    "reference_folder": [],
+    "reference_folder": "./ref",
     "compilation_commands": [
         "gcc hello.c -o hello -Wall",
         "gcc nohello.c -o nohello -Wall"
@@ -93,7 +94,7 @@ Champs à adapter :
 ```
 
 
-<a id="orgcc4cb4a"></a>
+<a id="orgfda3727"></a>
 
 ## Usage
 
@@ -115,7 +116,7 @@ fast-eval -h
                             increase output verbosity
 
 
-<a id="orgaea3be1"></a>
+<a id="orgd001678"></a>
 
 ## Etapes de correction
 
@@ -159,7 +160,7 @@ firefox example/readme.html
 ```
 
 
-<a id="orgd083cbe"></a>
+<a id="org50533cb"></a>
 
 ## know Issues
 
@@ -169,12 +170,12 @@ Some Zip files unzip failed, idk why.
 -   other zip files
 
 
-<a id="org58414e2"></a>
+<a id="org1e4d539"></a>
 
 # Concept
 
 
-<a id="orge46f22f"></a>
+<a id="org84d0474"></a>
 
 ## Pourquoi ?
 
@@ -189,7 +190,7 @@ L'objectif de ce projet est de faciliter l'évaluation de TPs d'info. Générale
 -   **Exécution et évaluation:** Faire tourner le programme et voir ce que cela donne. Une partie plus ou moins couvrante peut être déléguée à des logiciels de tests, permettant d'avoir rapidement une idée de la pertinence de la solution soumise.
 
 
-<a id="org47ddd0e"></a>
+<a id="org4e85eb7"></a>
 
 ## Comment ?
 
@@ -198,17 +199,17 @@ Automatisation de la préparation, compilation et pourquoi pas d'une partie de l
 Cette automatisation ce concrétise par un programme python permettant de faire une grosse partie du travail fastidieux et répétitif nécessaire lors de l'évaluation de TPs/projets.
 
 
-<a id="orgeaa9166"></a>
+<a id="orgefcc171"></a>
 
 # Implémentation
 
 
-<a id="org3efbb11"></a>
+<a id="org5fbf4a7"></a>
 
 ## Package declaration
 
 
-<a id="orgf4eb8d7"></a>
+<a id="orgc398c8a"></a>
 
 ### Fichier de setup
 
@@ -219,7 +220,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.9',
+    version='0.2.12',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -254,7 +255,7 @@ tree .
 ```
 
 
-<a id="org1dd621d"></a>
+<a id="orga2ee76c"></a>
 
 ## Cli
 
@@ -277,7 +278,7 @@ def main():
 ```
 
 
-<a id="org01a1839"></a>
+<a id="org105703a"></a>
 
 ## Dépendances
 
@@ -309,12 +310,12 @@ def choice_str(choices, target=''):
 ```
 
 
-<a id="org666999d"></a>
+<a id="org36ef68d"></a>
 
 ## TODO Class
 
 
-<a id="orgeea6d25"></a>
+<a id="org4f4daa3"></a>
 
 ### Init
 
@@ -406,6 +407,7 @@ class FastEval:
             self.copy_ref()
             print('\n')
             self.prep_step()
+            self.gen_csv()
         else:
             print('Processing {} projects...\n'.format(len(self.submissions)))
             self.check_prep()
@@ -415,8 +417,8 @@ class FastEval:
         self.exte_step(self.comp_cmd, step='1_comp', label='Compiling')
         self.print_step_errors('1_comp')
         self.write_data()
-        #self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
-        #self.cleanup()
+        self.exte_step(self.exec_cmd, step='2_exec', label='Executing')
+        self.cleanup()
         self.print_step_errors('2_exec')
         self.write_data()
         self.export()
@@ -534,7 +536,10 @@ class FastEval:
                 self.submissions[sub]['step'] = '1_comp'
 
         to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-        print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
+        if len(to_check) == 0:
+            print(f'           0 fails. {self.info_str("✓")}')
+        else:
+            print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
     def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
         print('{}  {} projects...'.format(label, len(to_exec)))
@@ -597,16 +602,22 @@ class FastEval:
                             f.write(f' - {i}\n')
                 # Section erreur comp
                 if steps['1_comp']:
-                    f.write(f'*** Erreurs de compilation\n')
-                    for k, v in steps['1_comp'].items():
-                        f.write(f'#+begin_src bash\n')
-                        f.write(f'{k}\n')
-                        f.write('#+end_src\n')
-                        f.write('\n#+name: stderror\n')
-                        f.write(f'#+begin_example\n')
-                        for line in v['stderr']:
-                            f.write(f'{line}\n')
-                        f.write('\n#+end_example\n')
+                    usefull = False
+                    for v in steps['1_comp'].values():
+                        if 'stderr' in v:
+                            usefull = True
+                    if usefull:
+                        f.write(f'*** Erreurs de compilation\n')
+                        for k, v in steps['1_comp'].items():
+                            f.write(f'#+begin_src bash\n')
+                            f.write(f'{k}\n')
+                            f.write('#+end_src\n')
+
+                            f.write('\n#+name: stderror\n')
+                            f.write(f'#+begin_example\n')
+                            for line in v['stderr']:
+                                f.write(f'{line}\n')
+                            f.write('\n#+end_example\n')
 
                 # Section avec code rendu
                 if step != '0_prep':
@@ -656,6 +667,14 @@ class FastEval:
         else:
            print('Error while generating html')
 
+    def gen_csv(self):
+        outpath = os.path.join(self.workspace_path, 'notes.csv')
+        with open(outpath, 'w') as f:
+            names = [s for s in self.submissions]
+            names.sort()
+            print(names)
+            for n in names:
+                f.write(f'{n}, note\n')
     def next_step(self, step):
         if step == '0_prep':
             return '1_comp'
@@ -684,7 +703,7 @@ class FastEval:
 ```
 
 
-<a id="org8e116e6"></a>
+<a id="org54e11cd"></a>
 
 ### Print Helpers
 
@@ -724,7 +743,7 @@ def print_step_errors(self, step):
 ```
 
 
-<a id="orga941943"></a>
+<a id="orgda9fc09"></a>
 
 ### Json data files
 
@@ -761,7 +780,7 @@ def write_data(self):
 ```
 
 
-<a id="org7439d86"></a>
+<a id="org6f33e0e"></a>
 
 ### Préparation
 
@@ -870,11 +889,14 @@ def check_prep(self):
             self.submissions[sub]['step'] = '1_comp'
 
     to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-    print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
+    if len(to_check) == 0:
+        print(f'           0 fails. {self.info_str("✓")}')
+    else:
+        print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
 ```
 
 
-<a id="org6125f4b"></a>
+<a id="org5a1b366"></a>
 
 ### Compilation
 
@@ -931,7 +953,7 @@ def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
 ```
 
 
-<a id="org30679cf"></a>
+<a id="org03f16b6"></a>
 
 ### Cleanup
 
@@ -946,7 +968,7 @@ def cleanup(self):
 ```
 
 
-<a id="orgc5f1974"></a>
+<a id="org308d3ce"></a>
 
 ### Export vers org-mode
 
@@ -969,16 +991,22 @@ def export(self):
                         f.write(f' - {i}\n')
             # Section erreur comp
             if steps['1_comp']:
-                f.write(f'*** Erreurs de compilation\n')
-                for k, v in steps['1_comp'].items():
-                    f.write(f'#+begin_src bash\n')
-                    f.write(f'{k}\n')
-                    f.write('#+end_src\n')
-                    f.write('\n#+name: stderror\n')
-                    f.write(f'#+begin_example\n')
-                    for line in v['stderr']:
-                        f.write(f'{line}\n')
-                    f.write('\n#+end_example\n')
+                usefull = False
+                for v in steps['1_comp'].values():
+                    if 'stderr' in v:
+                        usefull = True
+                if usefull:
+                    f.write(f'*** Erreurs de compilation\n')
+                    for k, v in steps['1_comp'].items():
+                        f.write(f'#+begin_src bash\n')
+                        f.write(f'{k}\n')
+                        f.write('#+end_src\n')
+
+                        f.write('\n#+name: stderror\n')
+                        f.write(f'#+begin_example\n')
+                        for line in v['stderr']:
+                            f.write(f'{line}\n')
+                        f.write('\n#+end_example\n')
 
             # Section avec code rendu
             if step != '0_prep':
@@ -1021,7 +1049,7 @@ def export(self):
 ```
 
 
-<a id="org3e191d5"></a>
+<a id="org58a6783"></a>
 
 ### org vers html
 
@@ -1039,12 +1067,28 @@ def gen_html(self, orgfile='readme.org', style='tango'):
 ```
 
 
-<a id="org2748bf4"></a>
+<a id="org476d838"></a>
+
+### gen csv with names
+
+```python
+def gen_csv(self):
+    outpath = os.path.join(self.workspace_path, 'notes.csv')
+    with open(outpath, 'w') as f:
+        names = [s for s in self.submissions]
+        names.sort()
+        print(names)
+        for n in names:
+            f.write(f'{n}, note\n')
+```
+
+
+<a id="orga90453c"></a>
 
 # Déploiement
 
 
-<a id="orgddd5eed"></a>
+<a id="org9e8faa7"></a>
 
 ## Vers Pypi
 
@@ -1058,7 +1102,7 @@ twine upload dist/*
 ```
 
 
-<a id="org7ad28ae"></a>
+<a id="org8b75108"></a>
 
 ## Github Pages
 
