@@ -11,7 +11,7 @@ setup(
     url='https://github.com/Virgile-Dauge/fast-eval',
     # download_url='',
     keywords=['assessment', 'evaluation'],
-    install_requires=['colored'],
+    install_requires=['colored', 'alive-progress'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',

@@ -242,7 +242,7 @@ setup(
     url='https://github.com/Virgile-Dauge/fast-eval',
     # download_url='',
     keywords=['assessment', 'evaluation'],
-    install_requires=['colored'],
+    install_requires=['colored', 'alive-progress'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -315,6 +315,7 @@ tree .
   import shutil
   # Pour Exécution de programmes
   import subprocess
+  from alive_progress import alive_bar
 
   from colored import fg, bg, attr
   # Helpers
@@ -486,7 +487,9 @@ tree .
           print(f"Fail list : {to_print}\n")
       if self.verbosity > 1:
           for s in to_print:
-              print(f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}')
+              msg = f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}'
+              if len(msg) < 200:
+                  print(msg)
       print("\n")
 #+end_src
 
@@ -546,7 +549,6 @@ tree .
           os.mkdir(raw_dir)
           for o in os.listdir(self.submissions[sub]['path']):
               shutil.move(os.path.join(self.submissions[sub]['path'],o), raw_dir)
-          #files = [os.path.join(raw_dir, o) for o in os.listdir(raw_dir)]
           files = [os.path.join(raw_dir, f) for root, _, files in os.walk(raw_dir) for f in files]
           print(files)
           for f in files:
@@ -572,38 +574,42 @@ tree .
   def prep_step(self):
       to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
       print('Preparing  {} projects...'.format(len(to_prep)))
-      for sub in to_prep:
-          raw_dir = os.path.join(self.submissions[sub]['path'], 'raw')
-          eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
 
-          if not os.path.exists(eval_dir):
-              os.mkdir(eval_dir)
+      with alive_bar(len(to_prep)) as bar:
+          for sub in to_prep:
+              raw_dir = os.path.join(self.submissions[sub]['path'], 'raw')
+              eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
 
-          missing_files = []
+              if not os.path.exists(eval_dir):
+                  os.mkdir(eval_dir)
 
-          # Search every required files one by one
-          for f in self.required_files:
-              # List cadidates for searched file
-              student_code = search_files(f, raw_dir)
-              # Filter files in a "__MACOS" directory
-              student_code = [s for s in student_code if '__MACOS' not in s]
-              if len(student_code) == 1:
-                  shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
-              elif len(student_code) == 0:
-                  missing_files.append(f)
+              missing_files = []
+
+              # Search every required files one by one
+              for f in self.required_files:
+                  # List cadidates for searched file
+                  student_code = search_files(f, raw_dir)
+                  # Filter files in a "__MACOS" directory
+                  student_code = [s for s in student_code if '__MACOS' not in s]
+                  if len(student_code) == 1:
+                      shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
+                  elif len(student_code) == 0:
+                      missing_files.append(f)
+                  else:
+                      msg = 'You need to manually copy one of those files'
+                      msg = msg + choice_str(student_code, f)
+                      self.submissions[sub]['steps']['0_prep']['msg'] = msg
+
+              # Update missing files if needed
+              if missing_files:
+                  if 'missing_files' not in self.submissions[sub]['steps']['0_prep']:
+                      self.submissions[sub]['steps']['0_prep']['missing_files'] = missing_files
+                  else:
+                      self.submissions[sub]['steps']['0_prep']['missing_files'].extend(missing_files)
               else:
-                  msg = 'You need to manually copy one of those files'
-                  msg = msg + choice_str(student_code, f)
-                  self.submissions[sub]['steps']['0_prep']['msg'] = msg
+                  self.submissions[sub]['step'] = '1_comp'
 
-          # Update missing files if needed
-          if missing_files:
-              if 'missing_files' not in self.submissions[sub]['steps']['0_prep']:
-                  self.submissions[sub]['steps']['0_prep']['missing_files'] = missing_files
-              else:
-                  self.submissions[sub]['steps']['0_prep']['missing_files'].extend(missing_files)
-          else:
-              self.submissions[sub]['step'] = '1_comp'
+              bar()
 
       to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
       if len(to_prep) == 0:
@@ -621,24 +627,26 @@ tree .
 #+begin_src python
   def check_prep(self):
       to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-      print('Checking   {} projects...'.format(len(to_check)))
-      for sub in to_check:
-          eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
-          eval_files = [f for root, dirs, files in os.walk(eval_dir) for f in files]
+      print(f'Checking   {len(to_check)} projects...')
+      with alive_bar(len(to_check)) as bar:
+          for sub in to_check:
+              eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
+              eval_files = [f for root, dirs, files in os.walk(eval_dir) for f in files]
 
 
-          missing_files = [f for f in self.required_files if f not in eval_files]
-          # Update missing files if needed
-          if missing_files:
-              self.submissions[sub]['steps']['0_prep']['missing_files'] = missing_files
+              missing_files = [f for f in self.required_files if f not in eval_files]
+              # Update missing files if needed
+              if missing_files:
+                  self.submissions[sub]['steps']['0_prep']['missing_files'] = missing_files
+              else:
+                  self.submissions[sub]['step'] = '1_comp'
+
+              to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
+              bar()
+          if len(to_check) == 0:
+              print(f'0 fails. {self.info_str("✓")}')
           else:
-              self.submissions[sub]['step'] = '1_comp'
-
-      to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-      if len(to_check) == 0:
-          print(f'           0 fails. {self.info_str("✓")}')
-      else:
-          print('           ' + self.erro_str('{} fails.'.format(len(to_check))) + '\n')
+              print(self.erro_str(f'{len(to_check)} fails.') + '\n')
 #+end_src
 *** Compilation
 
@@ -660,39 +668,44 @@ tree .
   def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
       to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
       print('{}  {} projects...'.format(label, len(to_exec)))
+      if not cmd:
+          print('Nothing to do.')
+          return 0
       root_dir = os.getcwd()
-      for sub in to_exec:
-          os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
-          comp_ok = True
-          timeout_raised = False
-          for c in cmd:
-              try:
-                  completed_process = subprocess.run([c], capture_output=True, text=True, shell=True, timeout=timeout)
-                  if completed_process.returncode != 0:
+      with alive_bar(len(to_exec)) as bar:
+          for sub in to_exec:
+              os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
+              comp_ok = True
+              timeout_raised = False
+              for c in cmd:
+                  try:
+                      completed_process = subprocess.run([c], capture_output=True, text=True, shell=True, timeout=timeout)
+                      if completed_process.returncode != 0:
+                          comp_ok=False
+                          cond = [len(completed_process.stderr) > 0, len(completed_process.stdout)]
+                      if any(cond) and c not in self.submissions[sub]['steps'][step]:
+                          self.submissions[sub]['steps'][step][c] = {}
+                      if cond[0]:
+                          self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
+                      if cond[1]:
+                          out = completed_process.stdout.split('\n')
+                          if len(out) > 20:
+                              out = out[:10] + ['.'] + ['truncated by fast-eval'] + ['.'] + out[-10:]
+                          self.submissions[sub]['steps'][step][c]['stdout'] = out
+                  except Exception as e:
                       comp_ok=False
-                  cond = [len(completed_process.stderr) > 0, len(completed_process.stdout)]
-                  if any(cond) and c not in self.submissions[sub]['steps'][step]:
-                      self.submissions[sub]['steps'][step][c] = {}
-                  if cond[0]:
-                      self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
-                  if cond[1]:
-                      out = completed_process.stdout.split('\n')
-                      if len(out) > 20:
-                          out = out[:10] + ['.'] + ['truncated by fast-eval'] + ['.'] + out[-10:]
-                      self.submissions[sub]['steps'][step][c]['stdout'] = out
-              except Exception as e:
-                  comp_ok=False
-                  if type(e) is subprocess.TimeoutExpired:
-                      self.submissions[sub]['steps'][step][c] = 'timeout'
+                      if type(e) is subprocess.TimeoutExpired:
+                          self.submissions[sub]['steps'][step][c] = 'timeout'
 
-          if comp_ok:
-              self.submissions[sub]['step'] = self.next_step(step)
+              if comp_ok:
+                  self.submissions[sub]['step'] = self.next_step(step)
+              bar()
       os.chdir(root_dir)
       to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
       if len(to_exec) == 0:
-          print(f'           0 fails. {self.info_str("✓")}')
+          print(f' 0 fails. {self.info_str("✓")}')
       else:
-          print('           ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
+          print(' ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
 
 #+end_src
 
@@ -732,7 +745,7 @@ tree .
               if steps['1_comp']:
                   usefull = False
                   for v in steps['1_comp'].values():
-                      if 'stderr' in v:
+                      if 'stderr' in v and v['stderr'] and len(v['stderr'][0])>0:
                           usefull = True
                   if usefull:
                       f.write(f'*** Erreurs de compilation\n')
@@ -770,7 +783,7 @@ tree .
                   for k, v in steps['2_exec'].items():
                       f.write(f'#+begin_src bash\n')
                       f.write(f'{k}\n')
-                  f.write('#+end_src\n')
+                      f.write('#+end_src\n')
                   if 'stderr' in v:
                       f.write('\n#+name: stderror\n')
                       f.write(f'#+begin_example\n')
