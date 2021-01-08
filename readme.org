@@ -365,7 +365,7 @@ tree .
 
           with open(config_path, 'r') as fp:
               config = json.load(fp)
-          print(f'Loaded {self.info_str(config_path)} savefile. {self.info_str("✓")}')
+          print(f'Loaded {self.info_str(config_path)} config file. {self.info_str("✓")}')
           self.required_files = config['required_files']
 
           if len(config['reference_folder']) > 0:
@@ -488,7 +488,7 @@ tree .
       if self.verbosity > 1:
           for s in to_print:
               msg = f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}'
-              if len(msg) < 200:
+              if len(self.submissions[s]["steps"][step]) > 0 and len(msg) < 1000:
                   print(msg)
       print("\n")
 #+end_src
@@ -615,7 +615,7 @@ tree .
       if len(to_prep) == 0:
           print(f' 0 fails. {self.info_str("✓")}')
       else:
-          print( self.erro_str(f' {len(to_prep)} fails.') + '\n')
+          print(' ' + self.erro_str(f'{len(to_prep)} fails.') + '\n')
 #+end_src
 #+name: search_files
 #+begin_src python
@@ -665,6 +665,12 @@ tree .
 
 #+name: exte_step
 #+begin_src python
+
+  def format_output(self, out, max_lines=40):
+      if len(out) > max_lines:
+          return out[:max_lines//2] + ['<'] + ['truncated by fast-eval'] + ['>'] + out[-max_lines//2:]
+      return out
+
   def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
       to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
       print('{}  {} projects...'.format(label, len(to_exec)))
@@ -686,12 +692,13 @@ tree .
                       if any(cond) and c not in self.submissions[sub]['steps'][step]:
                           self.submissions[sub]['steps'][step][c] = {}
                       if cond[0]:
-                          self.submissions[sub]['steps'][step][c]['stderr'] = completed_process.stderr.split('\n')
+                          self.submissions[sub]['steps'][step][c]['stderr'] = self.format_output(
+                              completed_process.stderr.split('\n'))
                       if cond[1]:
                           out = completed_process.stdout.split('\n')
-                          if len(out) > 20:
-                              out = out[:10] + ['.'] + ['truncated by fast-eval'] + ['.'] + out[-10:]
-                          self.submissions[sub]['steps'][step][c]['stdout'] = out
+                          self.submissions[sub]['steps'][step][c]['stdout'] = self.format_output(
+                              completed_process.stdout.split('\n'))
+
                   except Exception as e:
                       comp_ok=False
                       if type(e) is subprocess.TimeoutExpired:
@@ -785,12 +792,14 @@ tree .
                       f.write(f'{k}\n')
                       f.write('#+end_src\n')
                   if 'stderr' in v:
+                      f.write('\nstderror\n')
                       f.write('\n#+name: stderror\n')
                       f.write(f'#+begin_example\n')
                       for line in v['stderr']:
                           f.write(f'{line}\n')
                       f.write('#+end_example\n')
                   if 'stdout' in v:
+                      f.write('\nstdout\n')
                       f.write('\n#+name: stdout\n')
                       f.write(f'#+begin_example\n')
                       for line in v['stdout']:
