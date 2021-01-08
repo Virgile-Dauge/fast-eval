@@ -182,7 +182,7 @@ class FastEval:
     
     def prep_step(self):
         to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-        print('Preparing  {} projects...'.format(len(to_prep)))
+        print(f'Preparing  {len(to_prep)} projects...')
     
         with alive_bar(len(to_prep)) as bar:
             for sub in to_prep:
@@ -222,9 +222,9 @@ class FastEval:
     
         to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
         if len(to_prep) == 0:
-            print(f'           0 fails. {self.info_str("✓")}')
+            print(f' 0 fails. {self.info_str("✓")}')
         else:
-            print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
+            print( self.erro_str(f' {len(to_prep)} fails.') + '\n')
     def check_prep(self):
         to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
         print(f'Checking   {len(to_check)} projects...')
@@ -243,10 +243,10 @@ class FastEval:
     
                 to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
                 bar()
-            if len(to_check) == 0:
-                print(f'0 fails. {self.info_str("✓")}')
-            else:
-                print(self.erro_str(f'{len(to_check)} fails.') + '\n')
+        if len(to_check) == 0:
+            print(f' 0 fails. {self.info_str("✓")}')
+        else:
+            print(' ' + self.erro_str(f'{len(to_check)} fails.') + '\n')
     def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
         print('{}  {} projects...'.format(label, len(to_exec)))

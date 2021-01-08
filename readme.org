@@ -573,7 +573,7 @@ tree .
 #+begin_src python
   def prep_step(self):
       to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-      print('Preparing  {} projects...'.format(len(to_prep)))
+      print(f'Preparing  {len(to_prep)} projects...')
 
       with alive_bar(len(to_prep)) as bar:
           for sub in to_prep:
@@ -613,9 +613,9 @@ tree .
 
       to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
       if len(to_prep) == 0:
-          print(f'           0 fails. {self.info_str("✓")}')
+          print(f' 0 fails. {self.info_str("✓")}')
       else:
-          print('           ' + self.erro_str('{} fails.'.format(len(to_prep))) + '\n')
+          print( self.erro_str(f' {len(to_prep)} fails.') + '\n')
 #+end_src
 #+name: search_files
 #+begin_src python
@@ -643,10 +643,10 @@ tree .
 
               to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
               bar()
-          if len(to_check) == 0:
-              print(f'0 fails. {self.info_str("✓")}')
-          else:
-              print(self.erro_str(f'{len(to_check)} fails.') + '\n')
+      if len(to_check) == 0:
+          print(f' 0 fails. {self.info_str("✓")}')
+      else:
+          print(' ' + self.erro_str(f'{len(to_check)} fails.') + '\n')
 #+end_src
 *** Compilation
 
