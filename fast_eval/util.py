@@ -12,6 +12,12 @@ import shutil
 import subprocess
 from alive_progress import alive_bar
 
+from rich.console import Console
+from rich.panel import Panel
+from rich.progress import Progress
+
+#from rich import pretty
+from rich import print
 from colored import fg, bg, attr
 # Helpers
 
@@ -23,6 +29,7 @@ def choice_str(choices, target=''):
       res = res + '├── ' + str(choice) + '\n'
     res = res + '└── ' + choices[-1]
     return res
+#pretty.install()
 
 class FastEval:
     """
@@ -34,6 +41,7 @@ class FastEval:
     """
     def __init__(self, args):
         "docstring"
+        self.console = Console()
         self.ecolor = bg('indian_red_1a') + fg('white')
         #self.ecolor = fg('red_3a')
         #self.wcolor = bg('orange_1') + fg('white')
@@ -183,8 +191,8 @@ class FastEval:
     def prep_step(self):
         to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
         print(f'Preparing  {len(to_prep)} projects...')
-    
-        with alive_bar(len(to_prep)) as bar:
+        with Progress(transient=True) as progress:
+            task = progress.add_task(f'Preparing...', total=len(to_prep))
             for sub in to_prep:
                 raw_dir = os.path.join(self.submissions[sub]['path'], 'raw')
                 eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
@@ -217,8 +225,7 @@ class FastEval:
                         self.submissions[sub]['steps']['0_prep']['missing_files'].extend(missing_files)
                 else:
                     self.submissions[sub]['step'] = '1_comp'
-    
-                bar()
+                progress.update(task, advance=1)
     
         to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
         if len(to_prep) == 0:
@@ -228,7 +235,8 @@ class FastEval:
     def check_prep(self):
         to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
         print(f'Checking   {len(to_check)} projects...')
-        with alive_bar(len(to_check)) as bar:
+        with Progress(transient=True) as progress:
+            task = progress.add_task(f'Checking...', total=len(to_check))
             for sub in to_check:
                 eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
                 eval_files = [f for root, dirs, files in os.walk(eval_dir) for f in files]
@@ -242,7 +250,7 @@ class FastEval:
                     self.submissions[sub]['step'] = '1_comp'
     
                 to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
-                bar()
+                progress.update(task, advance=1)
         if len(to_check) == 0:
             print(f' 0 fails. {self.info_str("✓")}')
         else:
@@ -260,7 +268,8 @@ class FastEval:
             print('Nothing to do.')
             return 0
         root_dir = os.getcwd()
-        with alive_bar(len(to_exec)) as bar:
+        with Progress(transient=True) as progress:
+            task = progress.add_task(f"[bold]{label}...", total=len(to_exec))
             for sub in to_exec:
                 os.chdir(os.path.join(self.submissions[sub]['path'], 'eval'))
                 comp_ok = True
@@ -288,7 +297,7 @@ class FastEval:
     
                 if comp_ok:
                     self.submissions[sub]['step'] = self.next_step(step)
-                bar()
+                progress.update(task, advance=1)
         os.chdir(root_dir)
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
         if len(to_exec) == 0:
@@ -406,11 +415,14 @@ class FastEval:
         else:
             return 'done'
     def erro_str(self, msg):
-        return self.ecolor + str(msg) + self.rcolor
+        #return self.ecolor + str(msg) + self.rcolor
+        return str(msg)
     def warn_str(self, msg):
-        return self.wcolor + str(msg) + self.rcolor
+        #return self.wcolor + str(msg) + self.rcolor
+        return str(msg)
     def info_str(self, msg):
-        return self.icolor + str(msg) + self.rcolor
+        #return self.icolor + str(msg) + self.rcolor
+        return str(msg)
     def print_step_errors(self, step):
         to_print = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
         if self.verbosity >= 1 and len(to_print) > 0:
@@ -418,6 +430,12 @@ class FastEval:
         if self.verbosity > 1:
             for s in to_print:
                 msg = f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}'
-                if len(self.submissions[s]["steps"][step]) > 0 and len(msg) < 1000:
-                    print(msg)
+                #self.console.print(f'{s}\'s errors :', self.submissions[s]["steps"][step])
+                #self.console.print(msg)
+                #from rich import Pretty
+                #self.console.rule(f'{s}\'s errors :')
+                #self.console.print(self.submissions[s]['steps'][step])
+                self.console.print(Panel.fit(str(self.submissions[s]['steps'][step]), title=f'[red]{s}\'s errors :'))
+                #if len(self.submissions[s]["steps"][step]) > 0 and len(msg) < 1000:
+                #    print(msg)
         print("\n")
