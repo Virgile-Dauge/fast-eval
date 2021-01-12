@@ -23,12 +23,7 @@ from colored import fg, bg, attr
 
 def search_files(name, d='.'):
     return [os.path.join(root, f) for root, _, files in os.walk(d) for f in files if f == name]
-def choice_str(choices, target=''):
-    res = '. ' + str(target) + '\n' + '│\n'
-    for choice in choices[:-1]:
-      res = res + '├── ' + str(choice) + '\n'
-    res = res + '└── ' + choices[-1]
-    return res
+
 #pretty.install()
 
 class FastEval:
@@ -42,44 +37,34 @@ class FastEval:
     def __init__(self, args):
         "docstring"
         self.console = Console()
-        self.ecolor = bg('indian_red_1a') + fg('white')
-        #self.ecolor = fg('red_3a')
-        #self.wcolor = bg('orange_1') + fg('white')
-        self.wcolor = fg('orange_1')
-        #self.icolor = bg('deep_sky_blue_2') + fg('white')
-        #self.icolor = fg('medium_turquoise') + attr('bold')
-        self.icolor = fg('light_sea_green') + attr('bold')
-        self.rcolor = attr('reset')
         if args.workspace:
             self.workspace_path = os.path.abspath(os.path.expanduser(args.workspace))
         else:
             self.workspace_path = os.path.join(os.getcwd(), 'submissions')
-        print(f'Using  {self.info_str(self.workspace_path)} as workspace. {self.info_str("✓")}')
+        print(f'Using  {self.workspace_path} as workspace. ✓')
 
         self.archive_path = os.path.expanduser(args.archive_path)
         if not os.path.exists(self.archive_path):
-            print('Given  {}'
-                  ' does not exist, exiting...'.format(self.erro_str(self.archive_path)),
-                  file=sys.stderr)
+            print(f'Given  {self.archive_path}'
+                  ' does not exist, exiting...', file=sys.stderr)
             sys.exit()
 
         self.verbosity = args.verbosity
         config_path = os.path.expanduser(args.config)
-        assert os.path.isfile(config_path), "{} is not a file.".format(self.erro_str(config_path))
+        assert os.path.isfile(config_path), f'{config_path} is not a file.'
 
         with open(config_path, 'r') as fp:
             config = json.load(fp)
-        print(f'Loaded {self.info_str(config_path)} config file. {self.info_str("✓")}')
+        print(f'Loaded {config_path} config file. ✓')
         self.required_files = config['required_files']
 
         if len(config['reference_folder']) > 0:
             self.ref_path = os.path.expanduser(config['reference_folder'])
             if not os.path.isdir(self.ref_path):
-                print('Given  {}'
-                  ' does not exist, exiting...'.format(self.erro_str(self.ref_path)),
-                  file=sys.stderr)
+                print(f'Given  {self.ref_path}'
+                  ' does not exist, exiting...', file=sys.stderr)
                 sys.exit()
-            print(f'Using  {self.info_str(self.ref_path)} as reference folder. {self.info_str("✓")}')
+            print(f'Using  {self.ref_path} as reference folder. ✓')
         else:
             self.ref_path = None
             print('Not using ref folder')
@@ -108,7 +93,7 @@ class FastEval:
         if self.pass_count == 0:
             shutil.unpack_archive(self.archive_path, self.workspace_path)
             submissions = self.clean_dirs()
-            print('Processing {} projects...\n'.format(len(submissions)))
+            print(f'Processing {len(submissions)} projects...\n')
             self.submissions = {key: dict(value, **{'step' : '0_prep', 'steps': {'0_prep' : {},
                                                                                  '1_comp' : {},
                                                                                  '2_exec' : {},
@@ -119,7 +104,7 @@ class FastEval:
             self.prep_step()
             self.gen_csv()
         else:
-            print('Processing {} projects...\n'.format(len(self.submissions)))
+            print(f'Processing {len(self.submissions)} projects...\n')
             self.check_prep()
 
         self.print_step_errors('0_prep')
@@ -143,9 +128,9 @@ class FastEval:
     
             self.pass_count = data['pass_count'] + 1
             self.submissions = data['submissions']
-            print(f'Loaded {self.info_str(data_file)} savefile. {self.info_str("✓")}\n')
+            print(f'Loaded {data_file} savefile. ✓\n')
         except FileNotFoundError:
-            print(f'Using  {self.info_str(data_file)} savefile. {self.info_str("✓")}\n')
+            print(f'Using  {data_file} savefile. ✓\n')
             self.pass_count = 0
     def write_data(self):
         data_file = os.path.join(self.workspace_path, 'data.json')
@@ -154,7 +139,7 @@ class FastEval:
                 json.dump({'pass_count': self.pass_count,
                            'submissions': self.submissions},
                           fp, sort_keys=True, indent=4, ensure_ascii=False)
-            print(f'Wrote  {self.info_str(data_file)} savefile. {self.info_str("✓")}')
+            print(f'Wrote  {data_file} savefile. ✓')
         except:
             print('Error while writing : \n => {}\n'.format(data_file),
                   file=sys.stderr)
@@ -175,13 +160,12 @@ class FastEval:
             for o in os.listdir(self.submissions[sub]['path']):
                 shutil.move(os.path.join(self.submissions[sub]['path'],o), raw_dir)
             files = [os.path.join(raw_dir, f) for root, _, files in os.walk(raw_dir) for f in files]
-            print(files)
             for f in files:
                 try:
                     shutil.unpack_archive(f, raw_dir)
                     #os.remove(f)
                 except shutil.ReadError:
-                    print('Unpack ' + self.warn_str(f) + ' failed.')
+                    print(f'Unpack {f} failed.')
     
     def copy_ref(self):
         if self.ref_path is not None:
@@ -229,9 +213,9 @@ class FastEval:
     
         to_prep = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
         if len(to_prep) == 0:
-            print(f' 0 fails. {self.info_str("✓")}')
+            print(f' 0 fails. ✓')
         else:
-            print(' ' + self.erro_str(f'{len(to_prep)} fails.') + '\n')
+            print(f' {len(to_prep)} fails.\n')
     def check_prep(self):
         to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
         print(f'Checking   {len(to_check)} projects...')
@@ -252,9 +236,9 @@ class FastEval:
                 to_check = [sub for sub in self.submissions if self.submissions[sub]['step'] == '0_prep']
                 progress.update(task, advance=1)
         if len(to_check) == 0:
-            print(f' 0 fails. {self.info_str("✓")}')
+            print(f' 0 fails. ✓')
         else:
-            print(' ' + self.erro_str(f'{len(to_check)} fails.') + '\n')
+            print(f' {len(to_check)} fails.\n')
     
     def format_output(self, out, max_lines=40):
         if len(out) > max_lines:
@@ -263,7 +247,7 @@ class FastEval:
     
     def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
-        print('{}  {} projects...'.format(label, len(to_exec)))
+        print(f'{label}  {len(to_exec)} projects...')
         if not cmd:
             print('Nothing to do.')
             return 0
@@ -301,17 +285,17 @@ class FastEval:
         os.chdir(root_dir)
         to_exec = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
         if len(to_exec) == 0:
-            print(f' 0 fails. {self.info_str("✓")}')
+            print(f' 0 fails. ✓')
         else:
-            print(' ' + self.erro_str('{} fails.'.format(len(to_exec))) + '\n')
+            print(f' {len(to_exec)} fails.\n')
     
     def cleanup(self):
         for c in self.cleanup_cmd:
             completed_process = subprocess.run(shlex.split(c))
             if completed_process.returncode == 0:
-                print(f'Cleanup : {c} {self.info_str("✓")}')
+                print(f'Cleanup : {c} ✓')
             else:
-                print(f'Cleanup : {c} {self.erro_str("❌")}')
+                print(f'Cleanup : {c} ❌')
     def export(self):
         outpath = os.path.join(self.workspace_path, 'readme.org')
         with open(outpath, 'w') as f:
@@ -393,7 +377,7 @@ class FastEval:
         cmd = shlex.split(f'pandoc -s {inpath} -o {outpath} --highlight-style {style} --template=easy_template.html --standalone --toc')
         completed_process = subprocess.run(cmd)
         if completed_process.returncode == 0:
-            print(f'Wrote  {self.info_str(outpath)} readable file. {self.info_str("✓")}')
+            print(f'Wrote  {outpath} readable file. ✓')
         else:
            print('Error while generating html')
     
@@ -402,7 +386,6 @@ class FastEval:
         with open(outpath, 'w') as f:
             names = [s for s in self.submissions]
             names.sort()
-            print(names)
             for n in names:
                 f.write(f'{n}, note\n')
     def next_step(self, step):
@@ -414,15 +397,6 @@ class FastEval:
             return '3_eval'
         else:
             return 'done'
-    def erro_str(self, msg):
-        #return self.ecolor + str(msg) + self.rcolor
-        return str(msg)
-    def warn_str(self, msg):
-        #return self.wcolor + str(msg) + self.rcolor
-        return str(msg)
-    def info_str(self, msg):
-        #return self.icolor + str(msg) + self.rcolor
-        return str(msg)
     def print_step_errors(self, step):
         to_print = [sub for sub in self.submissions if self.submissions[sub]['step'] == step]
         if self.verbosity >= 1 and len(to_print) > 0:
