@@ -238,7 +238,7 @@ class FastEval:
         else:
             print(f' {len(to_check)} fails.\n')
     
-    def format_output(self, out, max_lines=40):
+    def format_output(self, out, max_lines=400):
         if len(out) > max_lines:
             return out[:max_lines//2] + ['<'] + ['truncated by fast-eval'] + ['>'] + out[-max_lines//2:]
         return out
@@ -404,10 +404,9 @@ class FastEval:
                 msg = f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}'
                 #self.console.print(f'{s}\'s errors :', self.submissions[s]["steps"][step])
                 #self.console.print(msg)
-                #from rich import Pretty
-                #self.console.rule(f'{s}\'s errors :')
-                #self.console.print(self.submissions[s]['steps'][step])
-                self.console.print(Panel.fit(str(self.submissions[s]['steps'][step]), title=f'[red]{s}\'s errors :'))
+                self.console.rule(f'{s}\'s errors :')
+                self.console.print(self.submissions[s]['steps'][step])
+                #self.console.print(Panel.fit(str(self.submissions[s]['steps'][step]), title=f'[red]{s}\'s errors :'))
                 #if len(self.submissions[s]["steps"][step]) > 0 and len(msg) < 1000:
                 #    print(msg)
         print("\n")
