@@ -10,7 +10,6 @@ import pprint
 import shutil
 # Pour Exécution de programmes
 import subprocess
-from alive_progress import alive_bar
 
 from rich.console import Console
 from rich.panel import Panel
@@ -18,7 +17,6 @@ from rich.progress import Progress
 
 #from rich import pretty
 from rich import print
-from colored import fg, bg, attr
 # Helpers
 
 def search_files(name, d='.'):

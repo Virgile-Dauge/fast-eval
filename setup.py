@@ -4,14 +4,14 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.2.12',
+    version='0.3.0',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
     url='https://github.com/Virgile-Dauge/fast-eval',
     # download_url='',
     keywords=['assessment', 'evaluation'],
-    install_requires=['colored', 'alive-progress'],
+    install_requires=['rich'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
