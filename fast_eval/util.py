@@ -261,7 +261,7 @@ class FastEval:
                         completed_process = subprocess.run([c], capture_output=True, text=True, shell=True, timeout=timeout)
                         if completed_process.returncode != 0:
                             comp_ok=False
-                            cond = [len(completed_process.stderr) > 0, len(completed_process.stdout)]
+                        cond = [len(completed_process.stderr) > 0, len(completed_process.stdout) > 0]
                         if any(cond) and c not in self.submissions[sub]['steps'][step]:
                             self.submissions[sub]['steps'][step][c] = {}
                         if cond[0]:
@@ -298,14 +298,15 @@ class FastEval:
         outpath = os.path.join(self.workspace_path, 'readme.org')
         with open(outpath, 'w') as f:
             f.write("#+title: Rapport d'évaluation\n")
-            for s in self.submissions:
+            f.write('#+OPTIONS: ^:nil p:nil\n')
+            for s in sorted(self.submissions):
                 step = self.submissions[s]['step']
                 steps = self.submissions[s]['steps']
-                f.write(f'** {s}\n')
+                f.write(f'* {s}\n')
     
                 # Section erreur prep
                 if steps['0_prep']:
-                    f.write(f'*** Erreurs de préparation\n')
+                    f.write(f'** Erreurs de préparation\n')
                     for k, v in steps['0_prep'].items():
                         f.write(f'{k} :\n')
                         for i in v:
@@ -317,8 +318,9 @@ class FastEval:
                         if 'stderr' in v and v['stderr'] and len(v['stderr'][0])>0:
                             usefull = True
                     if usefull:
-                        f.write(f'*** Erreurs de compilation\n')
+                        f.write(f'** Erreurs de compilation\n')
                         for k, v in steps['1_comp'].items():
+                            f.write(f'*** {k}\n')
                             f.write(f'#+begin_src bash\n')
                             f.write(f'{k}\n')
                             f.write('#+end_src\n')
@@ -331,9 +333,9 @@ class FastEval:
     
                 # Section avec code rendu
                 if step != '0_prep':
-                    f.write(f'*** code\n')
+                    f.write(f'** code\n')
                     for sf in self.required_files:
-                        f.write(f'**** {sf}\n')
+                        f.write(f'*** {sf}\n')
                         # Détermination du langage
                         l = os.path.splitext(sf)[-1][1:]
                         if l == 'py':
@@ -348,25 +350,26 @@ class FastEval:
     
                 # Section retour exécution
                 if steps['2_exec']:
-                    f.write(f"*** Retours d'éxécution\n")
+                    f.write(f"** Retours d'éxécution\n")
                     for k, v in steps['2_exec'].items():
+                        f.write(f'*** {k}\n')
                         f.write(f'#+begin_src bash\n')
                         f.write(f'{k}\n')
                         f.write('#+end_src\n')
-                    if 'stderr' in v:
-                        f.write('\nstderror\n')
-                        f.write('\n#+name: stderror\n')
-                        f.write(f'#+begin_example\n')
-                        for line in v['stderr']:
-                            f.write(f'{line}\n')
-                        f.write('#+end_example\n')
-                    if 'stdout' in v:
-                        f.write('\nstdout\n')
-                        f.write('\n#+name: stdout\n')
-                        f.write(f'#+begin_example\n')
-                        for line in v['stdout']:
-                            f.write(f'{line}\n')
-                        f.write('#+end_example\n')
+                        if 'stderr' in v:
+                            f.write('\nstderror\n')
+                            f.write('\n#+name: stderror\n')
+                            f.write(f'#+begin_example\n')
+                            for line in v['stderr']:
+                                f.write(f'{line}\n')
+                            f.write('#+end_example\n')
+                        if 'stdout' in v:
+                            f.write('\nstdout\n')
+                            f.write('\n#+name: stdout\n')
+                            f.write(f'#+begin_example\n')
+                            for line in v['stdout']:
+                                f.write(f'{line}\n')
+                            f.write('#+end_example\n')
         if self.export_to_html:
             self.gen_html()
     def gen_html(self, orgfile='readme.org', style='tango'):
