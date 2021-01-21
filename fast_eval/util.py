@@ -54,9 +54,13 @@ class FastEval:
         with open(config_path, 'r') as fp:
             config = json.load(fp)
         print(f'Loaded {config_path} config file. ✓')
-        self.required_files = config['required_files']
 
-        if len(config['reference_folder']) > 0:
+        if 'required_files' in config:
+            self.required_files = config['required_files']
+        else:
+            self.required_files = []
+
+        if 'reference_folder' in config and len(config['reference_folder']) > 0:
             self.ref_path = os.path.expanduser(config['reference_folder'])
             if not os.path.isdir(self.ref_path):
                 print(f'Given  {self.ref_path}'
