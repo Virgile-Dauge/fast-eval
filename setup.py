@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='1.0.1',
+    version='1.1.0',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
