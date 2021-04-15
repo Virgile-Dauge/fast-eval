@@ -1,39 +1,39 @@
-- [Mode d'emploi](#orgfd34697)
-  - [Installation](#org0b0e17a)
-    - [Optionnal requirements](#orgae3bdbc)
-  - [Fichier de configuration](#org88885cb)
-  - [Usage](#org018a9a0)
-  - [Etapes de correction](#org07e7ce6)
-  - [know Issues](#org7e62d62)
-- [Concept](#orgc35bbdb)
-  - [Pourquoi ?](#org43c0a56)
-  - [Comment ?](#orga94e23a)
-- [Implémentation](#orge2e25cb)
-  - [Package declaration](#org8e0844f)
-    - [Fichier de setup](#orgd6df065)
-  - [Cli](#orgc74cfcc)
-  - [Dépendances](#org9393d46)
-  - [Class](#orgaba9d21)
-    - [Init](#orgd6f0269)
-    - [Print Helpers](#org99ce044)
-    - [Json data files](#org07150c9)
-    - [Préparation](#org2a99adc)
-    - [Compilation](#orge1d14ed)
-    - [Cleanup](#orgf48d2c7)
-    - [Export vers org-mode](#orgcbddd04)
-    - [org vers html](#orgab1ab97)
-    - [gen csv with names](#org502e388)
-- [Déploiement](#org7ab5842)
-  - [Vers Pypi](#org007d403)
-  - [Github Pages](#org1c438b9)
+- [Mode d'emploi](#orga604e44)
+  - [Installation](#org41bc9e9)
+    - [Optionnal requirements](#org7c7e6bb)
+  - [Fichier de configuration](#orga8f6f6f)
+  - [Usage](#orgd51cff1)
+  - [Etapes de correction](#orgf7c48fd)
+  - [know Issues](#orge0df301)
+- [Concept](#orgb000046)
+  - [Pourquoi ?](#org8620596)
+  - [Comment ?](#org114985f)
+- [Implémentation](#org2ce5ee5)
+  - [Package declaration](#orga7b229d)
+    - [Fichier de setup](#orgcf0cd06)
+  - [Cli](#org5891085)
+  - [Dépendances](#orgbbc1e30)
+  - [Class](#org30f596a)
+    - [Init](#orge0cbc4b)
+    - [Print Helpers](#org584a4aa)
+    - [Json data files](#orgf80316f)
+    - [Préparation](#org3106702)
+    - [Compilation](#orgb440269)
+    - [Cleanup](#org06392ee)
+    - [Export vers org-mode](#org42f97a8)
+    - [org vers html](#org8f88266)
+    - [gen csv with names](#org2388478)
+- [Déploiement](#org7714fe5)
+  - [Vers Pypi](#org3364976)
+  - [Github Pages](#org2e0b027)
 
 
-<a id="orgfd34697"></a>
+<a id="orga604e44"></a>
 
 # TODO Mode d'emploi
 
 
-<a id="org0b0e17a"></a>
+<a id="org41bc9e9"></a>
 
 ## Installation
 
@@ -42,7 +42,7 @@ pip install fast-eval
 ```
 
 
-<a id="orgae3bdbc"></a>
+<a id="org7c7e6bb"></a>
 
 ### Optionnal requirements
 
@@ -61,7 +61,7 @@ pip install fast-eval
     ```
 
 
-<a id="org88885cb"></a>
+<a id="orga8f6f6f"></a>
 
 ## Fichier de configuration
 
@@ -94,7 +94,7 @@ Champs à adapter :
 ```
 
 
-<a id="org018a9a0"></a>
+<a id="orgd51cff1"></a>
 
 ## Usage
 
@@ -116,7 +116,7 @@ fast-eval -h
                             increase output verbosity
 
 
-<a id="org07e7ce6"></a>
+<a id="orgf7c48fd"></a>
 
 ## Etapes de correction
 
@@ -160,7 +160,7 @@ firefox example/readme.html
 ```
 
 
-<a id="org7e62d62"></a>
+<a id="orge0df301"></a>
 
 ## know Issues
 
@@ -170,12 +170,12 @@ Some Zip files unzip failed, idk why.
 -   other zip files
 
 
-<a id="orgc35bbdb"></a>
+<a id="orgb000046"></a>
 
 # Concept
 
 
-<a id="org43c0a56"></a>
+<a id="org8620596"></a>
 
 ## Pourquoi ?
 
@@ -190,7 +190,7 @@ L'objectif de ce projet est de faciliter l'évaluation de TPs d'info. Générale
 -   **Exécution et évaluation:** Faire tourner le programme et voir ce que cela donne. Une partie plus ou moins couvrante peut être déléguée à des logiciels de tests, permettant d'avoir rapidement une idée de la pertinence de la solution soumise.
 
 
-<a id="orga94e23a"></a>
+<a id="org114985f"></a>
 
 ## Comment ?
 
@@ -199,17 +199,17 @@ Automatisation de la préparation, compilation et pourquoi pas d'une partie de l
 Cette automatisation ce concrétise par un programme python permettant de faire une grosse partie du travail fastidieux et répétitif nécessaire lors de l'évaluation de TPs/projets.
 
 
-<a id="orge2e25cb"></a>
+<a id="org2ce5ee5"></a>
 
 # Implémentation
 
 
-<a id="org8e0844f"></a>
+<a id="orga7b229d"></a>
 
 ## Package declaration
 
 
-<a id="orgd6df065"></a>
+<a id="orgcf0cd06"></a>
 
 ### Fichier de setup
 
@@ -220,7 +220,7 @@ from setuptools import setup, find_packages
 setup(
     name='fast-eval',
     packages=find_packages(exclude=["examples/*"]),
-    version='0.3.0',
+    version='1.0.1',
     description='Simple tool to provide automation to assessment processes.',
     author=u'Virgile Daugé',
     author_email='virgile.dauge@pm.me',
@@ -255,7 +255,7 @@ tree .
 ```
 
 
-<a id="orgc74cfcc"></a>
+<a id="org5891085"></a>
 
 ## Cli
 
@@ -278,7 +278,7 @@ def main():
 ```
 
 
-<a id="org9393d46"></a>
+<a id="orgbbc1e30"></a>
 
 ## Dépendances
 
@@ -296,6 +296,8 @@ import shutil
 # Pour Exécution de programmes
 import subprocess
 
+import re
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress
@@ -305,18 +307,19 @@ from rich import print
 # Helpers
 
 def search_files(name, d='.'):
-    return [os.path.join(root, f) for root, _, files in os.walk(d) for f in files if f == name]
+    return [os.path.join(root, re.fullmatch(name, f).group()) for root, _, files in os.walk(d) for f in files if re.fullmatch(name, f)]
 
-#pretty.install()
+from rich import pretty
+pretty.install()
 ```
 
 
-<a id="orgaba9d21"></a>
+<a id="org30f596a"></a>
 
 ## TODO Class
 
 
-<a id="orgd6f0269"></a>
+<a id="orge0cbc4b"></a>
 
 ### Init
 
@@ -353,9 +356,13 @@ class FastEval:
         with open(config_path, 'r') as fp:
             config = json.load(fp)
         print(f'Loaded {config_path} config file. ✓')
-        self.required_files = config['required_files']
 
-        if len(config['reference_folder']) > 0:
+        if 'required_files' in config:
+            self.required_files = config['required_files']
+        else:
+            self.required_files = []
+
+        if 'reference_folder' in config and len(config['reference_folder']) > 0:
             self.ref_path = os.path.expanduser(config['reference_folder'])
             if not os.path.isdir(self.ref_path):
                 print(f'Given  {self.ref_path}'
@@ -482,20 +489,23 @@ class FastEval:
                     os.mkdir(eval_dir)
 
                 missing_files = []
-
+                self.submissions[sub]['files'] = {}
                 # Search every required files one by one
                 for f in self.required_files:
                     # List cadidates for searched file
                     student_code = search_files(f, raw_dir)
                     # Filter files in a "__MACOS" directory
                     student_code = [s for s in student_code if '__MACOS' not in s]
+                    self.submissions[sub]['files'][f] = student_code
                     if len(student_code) == 1:
-                        shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
+                        shutil.copyfile(student_code[0], os.path.join(eval_dir, os.path.basename(student_code[0])))
                     elif len(student_code) == 0:
                         missing_files.append(f)
                     else:
-                        msg = 'You need to manually copy one of those files'
-                        msg = msg + choice_str(student_code, f)
+                        missing_files.append(f)
+                        msg = 'You need to manually copy one of those files: \n'
+                        for candidate in student_code:
+                            msg = msg + ' - ' + candidate + '\n'
                         self.submissions[sub]['steps']['0_prep']['msg'] = msg
 
                 # Update missing files if needed
@@ -522,7 +532,6 @@ class FastEval:
                 eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
                 eval_files = [f for root, dirs, files in os.walk(eval_dir) for f in files]
 
-
                 missing_files = [f for f in self.required_files if f not in eval_files]
                 # Update missing files if needed
                 if missing_files:
@@ -547,7 +556,9 @@ class FastEval:
         print(f'{label}  {len(to_exec)} projects...')
         if not cmd:
             print('Nothing to do.')
-            return 0
+            for sub in to_exec:
+                self.submissions[sub]['step'] = self.next_step(self.submissions[sub]['step'])
+            return None
         root_dir = os.getcwd()
         with Progress(transient=True) as progress:
             task = progress.add_task(f"[bold]{label}...", total=len(to_exec))
@@ -608,8 +619,7 @@ class FastEval:
                     f.write(f'** Erreurs de préparation\n')
                     for k, v in steps['0_prep'].items():
                         f.write(f'{k} :\n')
-                        for i in v:
-                            f.write(f' - {i}\n')
+                        f.write(f'{v}\n')
                 # Section erreur comp
                 if steps['1_comp']:
                     usefull = False
@@ -633,17 +643,23 @@ class FastEval:
                 # Section avec code rendu
                 if step != '0_prep':
                     f.write(f'** code\n')
-                    for sf in self.required_files:
-                        f.write(f'*** {sf}\n')
+                    for src in self.submissions[s]['files'].values():
+                        src = src[0]
+                    #for sf in self.required_files:
+                        name = os.path.basename(src)
+                        f.write(f'*** {name}\n')
                         # Détermination du langage
-                        l = os.path.splitext(sf)[-1][1:]
-                        if l == 'py':
-                            l = python
-                        if l == 'sh':
-                            l = bash
+                        l = os.path.splitext(name)[-1]
+                        if l == '.py':
+                            l = 'python'
+                        if l == '.sh' or l == '.bash':
+                            l = 'bash'
+                        if l == '.c':
+                            l = 'c'
                         # Copie du code de l'étudiant
+                        f.write(f'#+name: {name}\n')
                         f.write(f'#+begin_src {l}\n')
-                        with open(os.path.join(self.submissions[s]['path'], 'eval', sf), 'r') as cf:
+                        with open(src, 'r') as cf:
                             f.write(cf.read())
                         f.write('\n#+end_src\n')
 
@@ -703,11 +719,11 @@ class FastEval:
             print(f"Fail list : {to_print}\n")
         if self.verbosity > 1:
             for s in to_print:
-                msg = f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}'
+                #msg = f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}'
                 #self.console.print(f'{s}\'s errors :', self.submissions[s]["steps"][step])
                 #self.console.print(msg)
                 self.console.rule(f'{s}\'s errors :')
-                self.console.print(self.submissions[s]['steps'][step])
+                self.console.print(self.submissions[s]['steps'][step]['msg'])
                 #self.console.print(Panel.fit(str(self.submissions[s]['steps'][step]), title=f'[red]{s}\'s errors :'))
                 #if len(self.submissions[s]["steps"][step]) > 0 and len(msg) < 1000:
                 #    print(msg)
@@ -717,7 +733,7 @@ class FastEval:
 ```
 
 
-<a id="org99ce044"></a>
+<a id="org584a4aa"></a>
 
 ### Print Helpers
 
@@ -728,11 +744,11 @@ def print_step_errors(self, step):
         print(f"Fail list : {to_print}\n")
     if self.verbosity > 1:
         for s in to_print:
-            msg = f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}'
+            #msg = f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}'
             #self.console.print(f'{s}\'s errors :', self.submissions[s]["steps"][step])
             #self.console.print(msg)
             self.console.rule(f'{s}\'s errors :')
-            self.console.print(self.submissions[s]['steps'][step])
+            self.console.print(self.submissions[s]['steps'][step]['msg'])
             #self.console.print(Panel.fit(str(self.submissions[s]['steps'][step]), title=f'[red]{s}\'s errors :'))
             #if len(self.submissions[s]["steps"][step]) > 0 and len(msg) < 1000:
             #    print(msg)
@@ -740,7 +756,7 @@ def print_step_errors(self, step):
 ```
 
 
-<a id="org07150c9"></a>
+<a id="orgf80316f"></a>
 
 ### Json data files
 
@@ -777,7 +793,7 @@ def write_data(self):
 ```
 
 
-<a id="org2a99adc"></a>
+<a id="org3106702"></a>
 
 ### Préparation
 
@@ -832,20 +848,23 @@ def prep_step(self):
                 os.mkdir(eval_dir)
 
             missing_files = []
-
+            self.submissions[sub]['files'] = {}
             # Search every required files one by one
             for f in self.required_files:
                 # List cadidates for searched file
                 student_code = search_files(f, raw_dir)
                 # Filter files in a "__MACOS" directory
                 student_code = [s for s in student_code if '__MACOS' not in s]
+                self.submissions[sub]['files'][f] = student_code
                 if len(student_code) == 1:
-                    shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
+                    shutil.copyfile(student_code[0], os.path.join(eval_dir, os.path.basename(student_code[0])))
                 elif len(student_code) == 0:
                     missing_files.append(f)
                 else:
-                    msg = 'You need to manually copy one of those files'
-                    msg = msg + choice_str(student_code, f)
+                    missing_files.append(f)
+                    msg = 'You need to manually copy one of those files: \n'
+                    for candidate in student_code:
+                        msg = msg + ' - ' + candidate + '\n'
                     self.submissions[sub]['steps']['0_prep']['msg'] = msg
 
             # Update missing files if needed
@@ -867,7 +886,7 @@ def prep_step(self):
 
 ```python
 def search_files(name, d='.'):
-    return [os.path.join(root, f) for root, _, files in os.walk(d) for f in files if f == name]
+    return [os.path.join(root, re.fullmatch(name, f).group()) for root, _, files in os.walk(d) for f in files if re.fullmatch(name, f)]
 ```
 
 ```python
@@ -879,7 +898,6 @@ def check_prep(self):
         for sub in to_check:
             eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
             eval_files = [f for root, dirs, files in os.walk(eval_dir) for f in files]
-
 
             missing_files = [f for f in self.required_files if f not in eval_files]
             # Update missing files if needed
@@ -897,7 +915,7 @@ def check_prep(self):
 ```
 
 
-<a id="orge1d14ed"></a>
+<a id="orgb440269"></a>
 
 ### Compilation
 
@@ -925,7 +943,9 @@ def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
     print(f'{label}  {len(to_exec)} projects...')
     if not cmd:
         print('Nothing to do.')
-        return 0
+        for sub in to_exec:
+            self.submissions[sub]['step'] = self.next_step(self.submissions[sub]['step'])
+        return None
     root_dir = os.getcwd()
     with Progress(transient=True) as progress:
         task = progress.add_task(f"[bold]{label}...", total=len(to_exec))
@@ -967,7 +987,7 @@ def exte_step(self, cmd, step='1_comp', label='Compiling', timeout=10):
 ```
 
 
-<a id="orgf48d2c7"></a>
+<a id="org06392ee"></a>
 
 ### Cleanup
 
@@ -982,7 +1002,7 @@ def cleanup(self):
 ```
 
 
-<a id="orgcbddd04"></a>
+<a id="org42f97a8"></a>
 
 ### Export vers org-mode
 
@@ -1002,8 +1022,7 @@ def export(self):
                 f.write(f'** Erreurs de préparation\n')
                 for k, v in steps['0_prep'].items():
                     f.write(f'{k} :\n')
-                    for i in v:
-                        f.write(f' - {i}\n')
+                    f.write(f'{v}\n')
             # Section erreur comp
             if steps['1_comp']:
                 usefull = False
@@ -1027,17 +1046,23 @@ def export(self):
             # Section avec code rendu
             if step != '0_prep':
                 f.write(f'** code\n')
-                for sf in self.required_files:
-                    f.write(f'*** {sf}\n')
+                for src in self.submissions[s]['files'].values():
+                    src = src[0]
+                #for sf in self.required_files:
+                    name = os.path.basename(src)
+                    f.write(f'*** {name}\n')
                     # Détermination du langage
-                    l = os.path.splitext(sf)[-1][1:]
-                    if l == 'py':
-                        l = python
-                    if l == 'sh':
-                        l = bash
+                    l = os.path.splitext(name)[-1]
+                    if l == '.py':
+                        l = 'python'
+                    if l == '.sh' or l == '.bash':
+                        l = 'bash'
+                    if l == '.c':
+                        l = 'c'
                     # Copie du code de l'étudiant
+                    f.write(f'#+name: {name}\n')
                     f.write(f'#+begin_src {l}\n')
-                    with open(os.path.join(self.submissions[s]['path'], 'eval', sf), 'r') as cf:
+                    with open(src, 'r') as cf:
                         f.write(cf.read())
                     f.write('\n#+end_src\n')
 
@@ -1068,7 +1093,7 @@ def export(self):
 ```
 
 
-<a id="orgab1ab97"></a>
+<a id="org8f88266"></a>
 
 ### org vers html
 
@@ -1086,7 +1111,7 @@ def gen_html(self, orgfile='readme.org', style='tango'):
 ```
 
 
-<a id="org502e388"></a>
+<a id="org2388478"></a>
 
 ### gen csv with names
 
@@ -1101,12 +1126,12 @@ def gen_csv(self):
 ```
 
 
-<a id="org7ab5842"></a>
+<a id="org7714fe5"></a>
 
 # Déploiement
 
 
-<a id="org007d403"></a>
+<a id="org3364976"></a>
 
 ## Vers Pypi
 
@@ -1120,7 +1145,7 @@ twine upload dist/*
 ```
 
 
-<a id="org1c438b9"></a>
+<a id="org2e0b027"></a>
 
 ## Github Pages
 

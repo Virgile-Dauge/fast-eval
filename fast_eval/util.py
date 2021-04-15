@@ -11,6 +11,8 @@ import shutil
 # Pour Exécution de programmes
 import subprocess
 
+import re
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress
@@ -20,9 +22,10 @@ from rich import print
 # Helpers
 
 def search_files(name, d='.'):
-    return [os.path.join(root, f) for root, _, files in os.walk(d) for f in files if f == name]
+    return [os.path.join(root, re.fullmatch(name, f).group()) for root, _, files in os.walk(d) for f in files if re.fullmatch(name, f)]
 
-#pretty.install()
+from rich import pretty
+pretty.install()
 
 class FastEval:
     """
@@ -187,20 +190,23 @@ class FastEval:
                     os.mkdir(eval_dir)
     
                 missing_files = []
-    
+                self.submissions[sub]['files'] = {}
                 # Search every required files one by one
                 for f in self.required_files:
                     # List cadidates for searched file
                     student_code = search_files(f, raw_dir)
                     # Filter files in a "__MACOS" directory
                     student_code = [s for s in student_code if '__MACOS' not in s]
+                    self.submissions[sub]['files'][f] = student_code
                     if len(student_code) == 1:
-                        shutil.copyfile(student_code[0], os.path.join(eval_dir, f))
+                        shutil.copyfile(student_code[0], os.path.join(eval_dir, os.path.basename(student_code[0])))
                     elif len(student_code) == 0:
                         missing_files.append(f)
                     else:
-                        msg = 'You need to manually copy one of those files'
-                        msg = msg + choice_str(student_code, f)
+                        missing_files.append(f)
+                        msg = 'You need to manually copy one of those files: \n'
+                        for candidate in student_code:
+                            msg = msg + ' - ' + candidate + '\n'
                         self.submissions[sub]['steps']['0_prep']['msg'] = msg
     
                 # Update missing files if needed
@@ -227,7 +233,6 @@ class FastEval:
                 eval_dir = os.path.join(self.submissions[sub]['path'], 'eval')
                 eval_files = [f for root, dirs, files in os.walk(eval_dir) for f in files]
     
-    
                 missing_files = [f for f in self.required_files if f not in eval_files]
                 # Update missing files if needed
                 if missing_files:
@@ -252,7 +257,9 @@ class FastEval:
         print(f'{label}  {len(to_exec)} projects...')
         if not cmd:
             print('Nothing to do.')
-            return 0
+            for sub in to_exec:
+                self.submissions[sub]['step'] = self.next_step(self.submissions[sub]['step'])
+            return None
         root_dir = os.getcwd()
         with Progress(transient=True) as progress:
             task = progress.add_task(f"[bold]{label}...", total=len(to_exec))
@@ -313,8 +320,7 @@ class FastEval:
                     f.write(f'** Erreurs de préparation\n')
                     for k, v in steps['0_prep'].items():
                         f.write(f'{k} :\n')
-                        for i in v:
-                            f.write(f' - {i}\n')
+                        f.write(f'{v}\n')
                 # Section erreur comp
                 if steps['1_comp']:
                     usefull = False
@@ -338,17 +344,23 @@ class FastEval:
                 # Section avec code rendu
                 if step != '0_prep':
                     f.write(f'** code\n')
-                    for sf in self.required_files:
-                        f.write(f'*** {sf}\n')
+                    for src in self.submissions[s]['files'].values():
+                        src = src[0]
+                    #for sf in self.required_files:
+                        name = os.path.basename(src)
+                        f.write(f'*** {name}\n')
                         # Détermination du langage
-                        l = os.path.splitext(sf)[-1][1:]
-                        if l == 'py':
-                            l = python
-                        if l == 'sh':
-                            l = bash
+                        l = os.path.splitext(name)[-1]
+                        if l == '.py':
+                            l = 'python'
+                        if l == '.sh' or l == '.bash':
+                            l = 'bash'
+                        if l == '.c':
+                            l = 'c'
                         # Copie du code de l'étudiant
+                        f.write(f'#+name: {name}\n')
                         f.write(f'#+begin_src {l}\n')
-                        with open(os.path.join(self.submissions[s]['path'], 'eval', sf), 'r') as cf:
+                        with open(src, 'r') as cf:
                             f.write(cf.read())
                         f.write('\n#+end_src\n')
     
@@ -408,11 +420,11 @@ class FastEval:
             print(f"Fail list : {to_print}\n")
         if self.verbosity > 1:
             for s in to_print:
-                msg = f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}'
+                #msg = f'{s}\'s errors : \n {self.submissions[s]["steps"][step]}'
                 #self.console.print(f'{s}\'s errors :', self.submissions[s]["steps"][step])
                 #self.console.print(msg)
                 self.console.rule(f'{s}\'s errors :')
-                self.console.print(self.submissions[s]['steps'][step])
+                self.console.print(self.submissions[s]['steps'][step]['msg'])
                 #self.console.print(Panel.fit(str(self.submissions[s]['steps'][step]), title=f'[red]{s}\'s errors :'))
                 #if len(self.submissions[s]["steps"][step]) > 0 and len(msg) < 1000:
                 #    print(msg)
